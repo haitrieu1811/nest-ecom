@@ -14,6 +14,11 @@ if (!fs.existsSync(path.resolve('.env'))) {
 
 const envSchema = z.object({
   DATABASE_URL: z.string(),
+
+  ADMIN_EMAIL: z.string(),
+  ADMIN_NAME: z.string(),
+  ADMIN_PHONE_NUMBER: z.string(),
+  ADMIN_PASSWORD: z.string(),
 })
 
 const envSafeParse = envSchema.safeParse(process.env)

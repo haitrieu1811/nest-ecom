@@ -16,7 +16,7 @@ datasource db {
 
 model Role {
   id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(50)
+  name        String    @unique @db.VarChar(50)
   description String    @db.VarChar(200)
   isActive    Boolean   @default(true)
   deletedAt   DateTime?
@@ -53,7 +53,7 @@ model Permission {
 model User {
   id          Int        @id @default(autoincrement())
   email       String     @unique
-  password    String     @db.VarChar(32)
+  password    String
   name        String     @db.VarChar(100)
   phoneNumber String     @unique @db.VarChar(11)
   avatar      String?
@@ -64,16 +64,16 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  roleId       Int
-  role         Role   @relation("UserRole", fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  roleId      Int
+  role        Role  @relation("UserRole", fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   // Tự quan hệ 1-n
-  createdById  Int?
-  createdBy    User?  @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  createdUsers User[] @relation("UserCreatedBy")
-  updatedById  Int?
-  updatedBy    User?  @relation("UserUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  updatedUsers User[] @relation("UserUpdatedBy")
+  createdById Int?
+  createdBy   User? @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  updatedById Int?
+  updatedBy   User? @relation("UserUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
 
+  createdUsers                User[]                @relation("UserCreatedBy")
+  updatedUsers                User[]                @relation("UserUpdatedBy")
   createdRoles                Role[]                @relation("RoleCreatedBy")
   updatedRoles                Role[]                @relation("RoleUpdatedBy")
   createdPermissions          Permission[]          @relation("PermissionCreatedBy")
