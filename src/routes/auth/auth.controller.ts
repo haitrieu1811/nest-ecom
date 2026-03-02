@@ -1,13 +1,16 @@
-import { Controller, Get } from '@nestjs/common'
+import { Body, Controller, Post } from '@nestjs/common'
+import { ZodResponse } from 'nestjs-zod'
 
+import { RegisterBodyDTO, RegisterResDTO } from 'src/routes/auth/auth.dto'
 import { AuthService } from 'src/routes/auth/auth.service'
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get()
-  test() {
-    return this.authService.test()
+  @Post('register')
+  @ZodResponse({ type: RegisterResDTO })
+  registerClient(@Body() body: RegisterBodyDTO) {
+    return this.authService.registerClient(body)
   }
 }

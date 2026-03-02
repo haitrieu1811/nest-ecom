@@ -1,6 +1,6 @@
 import { RoleCreateManyInput } from 'generated/prisma/models'
-import { ROLE_NAME } from 'src/constants/role.constant'
 import envConfig from 'src/shared/config'
+import { ROLE_NAME } from 'src/shared/constants/role.constant'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { PrismaService } from 'src/shared/services/prisma.service'
 

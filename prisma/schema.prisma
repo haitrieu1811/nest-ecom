@@ -54,8 +54,8 @@ model User {
   id          Int        @id @default(autoincrement())
   email       String     @unique
   password    String
-  name        String     @db.VarChar(100)
-  phoneNumber String     @unique @db.VarChar(11)
+  name        String?    @db.VarChar(100)
+  phoneNumber String?    @unique @db.VarChar(11)
   avatar      String?
   totpSecret  String?    @db.VarChar(6)
   status      UserStatus @default(ACTIVE)
