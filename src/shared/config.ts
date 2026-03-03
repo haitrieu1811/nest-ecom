@@ -19,6 +19,8 @@ const envSchema = z.object({
   ADMIN_NAME: z.string(),
   ADMIN_PHONE_NUMBER: z.string(),
   ADMIN_PASSWORD: z.string(),
+
+  OTP_EXPIRES_IN: z.string(),
 })
 
 const envSafeParse = envSchema.safeParse(process.env)

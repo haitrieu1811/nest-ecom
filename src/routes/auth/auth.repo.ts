@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
-import { RegisterBodyType, RegisterResType } from 'src/routes/auth/auth.schema'
+import { RegisterBodyType, RegisterResType, VerificationCode } from 'src/routes/auth/auth.schema'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -13,17 +13,11 @@ export class AuthRepo {
     private readonly hashingService: HashingService,
   ) {}
 
-  findUniqueUser(uniqueObject: { email: string } | { id: number } | { phoneNumber: string }) {
-    return this.prisma.user.findUnique({
-      where: uniqueObject,
-    })
-  }
-
   async createUser({
     data,
     roleId,
   }: {
-    data: Omit<RegisterBodyType, 'confirmPassword'>
+    data: Omit<RegisterBodyType, 'confirmPassword' | 'code'>
     roleId: number
   }): Promise<RegisterResType> {
     const hashedPassword = await this.hashingService.hash(data.password)
@@ -44,6 +38,32 @@ export class AuthRepo {
         createdAt: true,
         updatedAt: true,
       },
+    }) as any
+  }
+
+  createVerificationCode(
+    data: Pick<VerificationCode, 'email' | 'code' | 'type' | 'expiresAt'>,
+  ): Promise<VerificationCode> {
+    return this.prisma.verificationCode.upsert({
+      where: {
+        email_type: {
+          email: data.email,
+          type: data.type,
+        },
+      },
+      create: data,
+      update: {
+        code: data.code,
+        expiresAt: data.expiresAt,
+      },
+    }) as any
+  }
+
+  findFirstVerificationCode(
+    where: Pick<VerificationCode, 'email' | 'code' | 'type'>,
+  ): Promise<VerificationCode | null> {
+    return this.prisma.verificationCode.findFirst({
+      where,
     }) as any
   }
 }
