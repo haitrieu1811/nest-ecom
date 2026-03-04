@@ -90,6 +90,8 @@ export class AuthService {
     const { error } = await this.emailService.sendOTP({
       otp,
       email: data.email,
+      title: 'Xác thực email của bạn',
+      description: 'Nhập mã bên dưới để hoàn tất đăng ký tài khoản.',
     })
     if (error) {
       throw new UnprocessableEntityException([
