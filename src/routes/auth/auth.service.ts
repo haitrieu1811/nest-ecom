@@ -1,7 +1,7 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common'
+import { addMilliseconds } from 'date-fns'
 import ms from 'ms'
 
-import { addMilliseconds } from 'date-fns'
 import { EmailAlreadyExistException } from 'src/routes/auth/auth.error'
 import { AuthRepo } from 'src/routes/auth/auth.repo'
 import { RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.schema'
@@ -10,6 +10,7 @@ import { VerificationCodeType } from 'src/shared/constants/auth.constant'
 import { generateOTP } from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
+import { EmailService } from 'src/shared/services/email.service'
 
 @Injectable()
 export class AuthService {
@@ -17,6 +18,7 @@ export class AuthService {
     private readonly authRepo: AuthRepo,
     private readonly sharedRoleRepo: SharedRoleRepo,
     private readonly sharedUserRepo: SharedUserRepo,
+    private readonly emailService: EmailService,
   ) {}
 
   async register({ data, roleId }: { data: RegisterBodyType; roleId: number }) {
@@ -84,6 +86,19 @@ export class AuthService {
       code: otp,
       expiresAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN as ms.StringValue)).toISOString(),
     })
+    // Gửi mail
+    const { error } = await this.emailService.sendOTP({
+      otp,
+      email: data.email,
+    })
+    if (error) {
+      throw new UnprocessableEntityException([
+        {
+          path: 'code',
+          message: 'Gửi mã OTP thất bại.',
+        },
+      ])
+    }
     return verificationCode
   }
 }
