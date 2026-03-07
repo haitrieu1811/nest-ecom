@@ -5,6 +5,23 @@ import { VerificationCodeType } from 'src/shared/constants/auth.constant'
 
 const otpCodeSchema = z.string('OTP là bắt buộc.').length(6, 'OTP phải có độ dài 6 ký tự.')
 
+const TokensResSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+})
+
+export const DeviceSchema = z
+  .object({
+    id: z.int().positive(),
+    userId: z.int().positive(),
+    userAgent: z.string(),
+    ip: z.string(),
+    isActive: z.boolean().default(true),
+    lastActive: z.iso.datetime(),
+    createdAt: z.iso.datetime(),
+  })
+  .strict()
+
 export const RegisterBodySchema = UserSchema.pick({
   email: true,
   password: true,
@@ -24,12 +41,14 @@ export const RegisterBodySchema = UserSchema.pick({
   })
   .strict()
 
-export const RegisterResSchema = UserSchema.omit({
-  password: true,
-  totpSecret: true,
-  deletedAt: true,
-  createdById: true,
-  updatedById: true,
+export const RegisterResSchema = TokensResSchema.extend({
+  user: UserSchema.omit({
+    password: true,
+    totpSecret: true,
+    deletedAt: true,
+    createdById: true,
+    updatedById: true,
+  }).strict(),
 }).strict()
 
 export const VerificationCodeSchema = z
@@ -51,7 +70,17 @@ export const SendOTPBodySchema = VerificationCodeSchema.pick({
   type: true,
 }).strict()
 
+export const LoginBodySchema = UserSchema.pick({
+  email: true,
+  password: true,
+}).strict()
+
+export const LoginResSchema = RegisterResSchema
+
+export type DeviceType = z.infer<typeof DeviceSchema>
 export type RegisterBodyType = z.infer<typeof RegisterBodySchema>
 export type RegisterResType = z.infer<typeof RegisterResSchema>
 export type VerificationCode = z.infer<typeof VerificationCodeSchema>
 export type SendOTPBodyType = z.infer<typeof SendOTPBodySchema>
+export type LoginBodyType = z.infer<typeof LoginBodySchema>
+export type LoginResTyoe = z.infer<typeof LoginResSchema>

@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common'
 
-import { RegisterBodyType, RegisterResType, VerificationCode } from 'src/routes/auth/auth.schema'
+import { DeviceType, RegisterBodyType, VerificationCode } from 'src/routes/auth/auth.schema'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
+import { UserType } from 'src/shared/schemas/shared-user.schema'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
@@ -19,7 +20,7 @@ export class AuthRepo {
   }: {
     data: Omit<RegisterBodyType, 'confirmPassword' | 'code'>
     roleId: number
-  }): Promise<RegisterResType> {
+  }): Promise<Omit<UserType, 'password' | 'totpSecret' | 'deletedAt' | 'createdById' | 'updatedById'>> {
     const hashedPassword = await this.hashingService.hash(data.password)
     return this.prisma.user.create({
       data: {
@@ -27,16 +28,12 @@ export class AuthRepo {
         password: hashedPassword,
         roleId,
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phoneNumber: true,
-        avatar: true,
-        roleId: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
+      omit: {
+        password: true,
+        totpSecret: true,
+        deletedAt: true,
+        createdById: true,
+        updatedById: true,
       },
     }) as any
   }
@@ -65,5 +62,17 @@ export class AuthRepo {
     return this.prisma.verificationCode.findFirst({
       where,
     }) as any
+  }
+
+  createRefreshToken(data: { token: string; expiresAt: string; userId: number; deviceId: number }) {
+    return this.prisma.refreshToken.create({
+      data,
+    })
+  }
+
+  createDevice(data: Pick<DeviceType, 'ip' | 'userAgent' | 'userId'>) {
+    return this.prisma.device.create({
+      data,
+    })
   }
 }

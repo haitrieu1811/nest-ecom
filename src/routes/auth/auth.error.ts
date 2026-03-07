@@ -6,3 +6,17 @@ export const EmailAlreadyExistException = new UnprocessableEntityException([
     message: 'Email đã tồn tại trên hệ thống.',
   },
 ])
+
+export const EmailNotFoundException = new UnprocessableEntityException([
+  {
+    path: 'email',
+    message: 'Không tìm thấy email trên hệ thống.',
+  },
+])
+
+export const IncorrectPasswordException = new UnprocessableEntityException([
+  {
+    path: 'password',
+    message: 'Mật khẩu không chính xác.',
+  },
+])

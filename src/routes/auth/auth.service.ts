@@ -1,16 +1,30 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common'
 import { addMilliseconds } from 'date-fns'
+import omit from 'lodash/omit'
 import ms from 'ms'
 
-import { EmailAlreadyExistException } from 'src/routes/auth/auth.error'
+import {
+  EmailAlreadyExistException,
+  EmailNotFoundException,
+  IncorrectPasswordException,
+} from 'src/routes/auth/auth.error'
 import { AuthRepo } from 'src/routes/auth/auth.repo'
-import { RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.schema'
+import {
+  LoginBodyType,
+  LoginResTyoe,
+  RegisterBodyType,
+  RegisterResType,
+  SendOTPBodyType,
+} from 'src/routes/auth/auth.schema'
 import envConfig from 'src/shared/config'
 import { VerificationCodeType } from 'src/shared/constants/auth.constant'
 import { generateOTP } from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
 import { EmailService } from 'src/shared/services/email.service'
+import { HashingService } from 'src/shared/services/hashing.service'
+import { TokenService } from 'src/shared/services/token.service'
+import { AccessTokenPayloadInput, RefreshTokenPayloadInput } from 'src/shared/types/utils.type'
 
 @Injectable()
 export class AuthService {
@@ -19,9 +33,42 @@ export class AuthService {
     private readonly sharedRoleRepo: SharedRoleRepo,
     private readonly sharedUserRepo: SharedUserRepo,
     private readonly emailService: EmailService,
+    private readonly hashingService: HashingService,
+    private readonly tokenService: TokenService,
   ) {}
 
-  async register({ data, roleId }: { data: RegisterBodyType; roleId: number }) {
+  private async signTokens({
+    refreshTokenExp,
+    ...payload
+  }: AccessTokenPayloadInput & RefreshTokenPayloadInput & { refreshTokenExp?: number }) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.tokenService.signAccessToken(payload),
+      this.tokenService.signRefreshToken({ ...payload, exp: refreshTokenExp }),
+    ])
+    const decodedRefreshToken = await this.tokenService.verifyRefreshToken(refreshToken)
+    await this.authRepo.createRefreshToken({
+      deviceId: payload.deviceId,
+      token: refreshToken,
+      userId: decodedRefreshToken.userId,
+      expiresAt: new Date(decodedRefreshToken.exp * 1000).toISOString(),
+    })
+    return {
+      accessToken,
+      refreshToken,
+    }
+  }
+
+  async register({
+    data,
+    roleId,
+    ip,
+    userAgent,
+  }: {
+    data: RegisterBodyType
+    roleId: number
+    ip: string
+    userAgent: string
+  }): Promise<RegisterResType> {
     // Kiểm tra email đã tồn tại trên hệ thống hay chưa
     const user = await this.sharedUserRepo.findUnique({
       email: data.email,
@@ -51,7 +98,7 @@ export class AuthService {
         },
       ])
     }
-    // Tạo người dùng mới
+    // Tạo user mới, device mới trả về user và tokens
     const newUser = await this.authRepo.createUser({
       data: {
         email: data.email,
@@ -59,14 +106,30 @@ export class AuthService {
       },
       roleId,
     })
-    return newUser
+    const device = await this.authRepo.createDevice({
+      ip,
+      userAgent,
+      userId: newUser.id,
+    })
+    const { accessToken, refreshToken } = await this.signTokens({
+      userId: newUser.id,
+      roleId: newUser.roleId,
+      deviceId: device.id,
+    })
+    return {
+      accessToken,
+      refreshToken,
+      user: newUser,
+    }
   }
 
-  async registerClient(data: RegisterBodyType) {
+  async registerClient({ data, ip, userAgent }: { data: RegisterBodyType; ip: string; userAgent: string }) {
     const clientRoleId = await this.sharedRoleRepo.getClientRoleId()
     return this.register({
       data,
       roleId: clientRoleId,
+      ip,
+      userAgent,
     })
   }
 
@@ -102,5 +165,34 @@ export class AuthService {
       ])
     }
     return verificationCode
+  }
+
+  async login({ data, ip, userAgent }: { data: LoginBodyType; ip: string; userAgent: string }): Promise<LoginResTyoe> {
+    // Kiểm tra email có tồn tại trên hệ thống không
+    const user = await this.sharedUserRepo.findUnique({
+      email: data.email,
+    })
+    if (!user) {
+      throw EmailNotFoundException
+    }
+    // Kiểm tra mật khẩu có đúng không
+    const isCorrectPassword = await this.hashingService.compare(data.password, user.password)
+    if (!isCorrectPassword) {
+      throw IncorrectPasswordException
+    }
+    // Tạo thiết bị đăng nhập mới
+    const device = await this.authRepo.createDevice({
+      ip,
+      userAgent,
+      userId: user.id,
+    })
+    // Tạo token và trả về thông tin user
+    const configuredUser = omit(user, ['password', 'totpSecret', 'deletedAt', 'createdById', 'updatedById'])
+    const { accessToken, refreshToken } = await this.signTokens({
+      userId: user.id,
+      roleId: user.roleId,
+      deviceId: device.id,
+    })
+    return { accessToken, refreshToken, user: configuredUser }
   }
 }

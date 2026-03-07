@@ -23,6 +23,13 @@ const envSchema = z.object({
   OTP_EXPIRES_IN: z.string(),
 
   RESEND_API_KEY: z.string(),
+
+  ACCESS_TOKEN_SECRET: z.string(),
+  REFRESH_TOKEN_SECRET: z.string(),
+  FORGOT_PASSWORD_SECRET: z.string(),
+  ACCESS_TOKEN_EXPIRES_IN: z.string(),
+  REFRESH_TOKEN_EXPIRES_IN: z.string(),
+  FORGOT_PASSWORD_EXPIRES_IN: z.string(),
 })
 
 const envSafeParse = envSchema.safeParse(process.env)

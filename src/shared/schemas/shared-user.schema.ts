@@ -11,7 +11,7 @@ export const UserSchema = z
     email: emailSchema,
     password: z
       .string('Mật khẩu là bắt buộc.')
-      .min(8, 'Mật khẩu phải có độ dài tối thiểu 8 ký tự.')
+      .min(6, 'Mật khẩu phải có độ dài tối thiểu 6 ký tự.')
       .max(32, 'Mật khẩu phải có độ dài tối đa 32 ký tự.'),
     name: z.string().max(100, 'Tên chỉ có độ dài tối đa 100 ký tự.').nullable(),
     phoneNumber: z
