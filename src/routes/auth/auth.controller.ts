@@ -1,7 +1,15 @@
 import { Body, Controller, Ip, Post } from '@nestjs/common'
 import { ZodResponse } from 'nestjs-zod'
 
-import { LoginBodyDTO, LoginResDTO, RegisterBodyDTO, RegisterResDTO, SendOTPBodyDTO } from 'src/routes/auth/auth.dto'
+import {
+  LoginBodyDTO,
+  LoginResDTO,
+  RefreshTokenBodyDTO,
+  RegisterBodyDTO,
+  RegisterResDTO,
+  SendOTPBodyDTO,
+  TokensResDTO,
+} from 'src/routes/auth/auth.dto'
 import { AuthService } from 'src/routes/auth/auth.service'
 import UserAgent from 'src/shared/decorators/user-agent.decorator'
 
@@ -32,5 +40,11 @@ export class AuthController {
       ip,
       userAgent,
     })
+  }
+
+  @Post('refresh-token')
+  @ZodResponse({ type: TokensResDTO })
+  refreshToken(@Body() body: RefreshTokenBodyDTO) {
+    return this.authService.refreshToken(body.refreshToken)
   }
 }

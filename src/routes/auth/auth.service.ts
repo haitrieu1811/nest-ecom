@@ -1,4 +1,5 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common'
+import { Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common'
+import { JsonWebTokenError } from '@nestjs/jwt'
 import { addMilliseconds } from 'date-fns'
 import omit from 'lodash/omit'
 import ms from 'ms'
@@ -7,11 +8,13 @@ import {
   EmailAlreadyExistException,
   EmailNotFoundException,
   IncorrectPasswordException,
+  RefreshTokenNotExistException,
 } from 'src/routes/auth/auth.error'
 import { AuthRepo } from 'src/routes/auth/auth.repo'
 import {
   LoginBodyType,
   LoginResTyoe,
+  RefreshTokenResType,
   RegisterBodyType,
   RegisterResType,
   SendOTPBodyType,
@@ -194,5 +197,36 @@ export class AuthService {
       deviceId: device.id,
     })
     return { accessToken, refreshToken, user: configuredUser }
+  }
+
+  async refreshToken(bodyRefreshToken: string): Promise<RefreshTokenResType> {
+    try {
+      // Kiểm tra refresh token có hợp lệ không bằng phương thức verify của JWT
+      const decodedRefreshToken = await this.tokenService.verifyRefreshToken(bodyRefreshToken)
+      // Kiểm tra refresh token có tồn tại trong DB không
+      const dbRefreshToken = await this.authRepo.findUniqueRefreshTokenIncludeUserAndDevice(bodyRefreshToken)
+      if (!dbRefreshToken) {
+        throw RefreshTokenNotExistException
+      }
+      // Tạo access token và refresh token mới
+      const { accessToken, refreshToken } = await this.signTokens({
+        userId: dbRefreshToken.userId,
+        roleId: dbRefreshToken.user.roleId,
+        deviceId: dbRefreshToken.deviceId,
+        refreshTokenExp: decodedRefreshToken.exp, // thời gian hết hạn của RT cũ
+      })
+      // Xóa refresh token cũ
+      await this.authRepo.deleteRefreshToken(bodyRefreshToken)
+      // Trả về client access token và refresh token mới
+      return {
+        accessToken,
+        refreshToken,
+      }
+    } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        throw new UnauthorizedException(error.message)
+      }
+      throw error
+    }
   }
 }
