@@ -1,4 +1,4 @@
-import { UnprocessableEntityException } from '@nestjs/common'
+import { UnauthorizedException, UnprocessableEntityException } from '@nestjs/common'
 
 export const EmailAlreadyExistException = new UnprocessableEntityException([
   {
@@ -20,3 +20,5 @@ export const IncorrectPasswordException = new UnprocessableEntityException([
     message: 'Mật khẩu không chính xác.',
   },
 ])
+
+export const RefreshTokenNotExistException = new UnauthorizedException('Refresh token không tồn tại.')

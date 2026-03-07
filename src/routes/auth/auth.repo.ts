@@ -75,4 +75,33 @@ export class AuthRepo {
       data,
     })
   }
+
+  findUniqueRefreshTokenIncludeUserAndDevice(token: string) {
+    return this.prisma.refreshToken.findUnique({
+      where: {
+        token,
+      },
+      include: {
+        user: true,
+        device: true,
+      },
+    })
+  }
+
+  deleteRefreshToken(token: string) {
+    return this.prisma.refreshToken.delete({
+      where: {
+        token,
+      },
+    })
+  }
+
+  updateDevice({ deviceId, data }: { deviceId: number; data: Partial<DeviceType> }) {
+    return this.prisma.device.update({
+      where: {
+        id: deviceId,
+      },
+      data,
+    })
+  }
 }

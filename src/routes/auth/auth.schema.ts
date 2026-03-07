@@ -5,7 +5,7 @@ import { VerificationCodeType } from 'src/shared/constants/auth.constant'
 
 const otpCodeSchema = z.string('OTP là bắt buộc.').length(6, 'OTP phải có độ dài 6 ký tự.')
 
-const TokensResSchema = z.object({
+export const TokensResSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
 })
@@ -77,6 +77,12 @@ export const LoginBodySchema = UserSchema.pick({
 
 export const LoginResSchema = RegisterResSchema
 
+export const RefreshTokenBodySchema = z
+  .object({
+    refreshToken: z.string('Refresh token là bắt buộc.'),
+  })
+  .strict()
+
 export type DeviceType = z.infer<typeof DeviceSchema>
 export type RegisterBodyType = z.infer<typeof RegisterBodySchema>
 export type RegisterResType = z.infer<typeof RegisterResSchema>
@@ -84,3 +90,5 @@ export type VerificationCode = z.infer<typeof VerificationCodeSchema>
 export type SendOTPBodyType = z.infer<typeof SendOTPBodySchema>
 export type LoginBodyType = z.infer<typeof LoginBodySchema>
 export type LoginResTyoe = z.infer<typeof LoginResSchema>
+export type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>
+export type RefreshTokenResType = z.infer<typeof TokensResSchema>
