@@ -7,3 +7,24 @@ export const VerificationCodeType = {
   REGISTER: 'REGISTER',
   FORGOT_PASSWORD: 'FORGOT_PASSWORD',
 } as const
+
+export const RequestDecodedAccessToken = 'accessToken'
+
+export const AuthorizationTypes = {
+  BEARER: 'BEARER',
+  API_KEY: 'API_KEY',
+  NONE: 'NONE',
+} as const
+
+export type TypeOfAuthorizationTypes = keyof typeof AuthorizationTypes
+
+export const AuthorizationCondition = {
+  AND: 'AND',
+  OR: 'OR',
+} as const
+
+export type AuthorizationConditionType = keyof typeof AuthorizationCondition
+
+export type AuthorizationOptionsType = {
+  condition?: AuthorizationConditionType
+}

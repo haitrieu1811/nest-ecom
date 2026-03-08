@@ -12,6 +12,7 @@ import {
   TokensResDTO,
 } from 'src/routes/auth/auth.dto'
 import { AuthService } from 'src/routes/auth/auth.service'
+import { IsPublic } from 'src/shared/decorators/auth.decorator'
 import UserAgent from 'src/shared/decorators/user-agent.decorator'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
@@ -20,6 +21,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @IsPublic()
   @ZodResponse({ type: RegisterResDTO })
   registerClient(@Body() body: RegisterBodyDTO, @Ip() ip: string, @UserAgent() userAgent: string) {
     return this.authService.registerClient({
@@ -30,11 +32,14 @@ export class AuthController {
   }
 
   @Post('otp')
+  @IsPublic()
+  @ZodResponse({ type: MessageResDTO })
   sendOTP(@Body() body: SendOTPBodyDTO) {
     return this.authService.sendOTP(body)
   }
 
   @Post('login')
+  @IsPublic()
   @ZodResponse({ type: LoginResDTO })
   login(@Body() body: LoginBodyDTO, @Ip() ip: string, @UserAgent() userAgent: string) {
     return this.authService.login({

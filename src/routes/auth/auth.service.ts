@@ -153,7 +153,7 @@ export class AuthService {
     })
   }
 
-  async sendOTP(body: SendOTPBodyType) {
+  async sendOTP(body: SendOTPBodyType): Promise<MessageResType> {
     // Kiểm tra email đã tồn tại trên hệ thống hay chưa
     const user = await this.sharedUserRepo.findUnique({
       email: body.email,
@@ -163,19 +163,20 @@ export class AuthService {
     }
     // Tạo mã OTP
     const otp = generateOTP()
-    const verificationCode = await this.authRepo.createVerificationCode({
+    const $createVerificationCode = this.authRepo.createVerificationCode({
       email: body.email,
       type: body.type,
       code: otp,
       expiresAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN as ms.StringValue)).toISOString(),
     })
     // Gửi mail
-    const { error } = await this.emailService.sendOTP({
+    const $sendMail = this.emailService.sendOTP({
       otp,
       email: body.email,
       title: 'Xác thực email của bạn',
       description: 'Nhập mã bên dưới để hoàn tất đăng ký tài khoản.',
     })
+    const [{ error }] = await Promise.all([$sendMail, $createVerificationCode])
     if (error) {
       throw new UnprocessableEntityException([
         {
@@ -184,7 +185,9 @@ export class AuthService {
         },
       ])
     }
-    return verificationCode
+    return {
+      message: 'Gửi mã OTP thành công.',
+    }
   }
 
   async login({ body, ip, userAgent }: { body: LoginBodyType; ip: string; userAgent: string }): Promise<LoginResTyoe> {

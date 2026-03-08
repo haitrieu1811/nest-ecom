@@ -27,7 +27,7 @@ export const OTPEmail = ({ code, title, description }: OTPEmailProps) => (
             </Text>
           </Section>
           <Text className="text-[#444] text-[15px] leading-[23px] tracking-[0] py-0 px-10 m-0 text-center">
-            Nếu bạn không gửi yêu cầu vui lòng bỏ qua email này
+            Mã OTP có hiệu lực trong 5 phút. Nếu bạn không gửi yêu cầu vui lòng bỏ qua email này
           </Text>
         </Container>
       </Body>
