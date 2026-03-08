@@ -104,4 +104,33 @@ export class AuthRepo {
       data,
     })
   }
+
+  findUniqueUserIncludeRole(
+    uniqueObject:
+      | {
+          id: number
+        }
+      | {
+          email: string
+        }
+      | {
+          phoneNumber: string
+        },
+  ) {
+    return this.prisma.user.findUnique({
+      where: uniqueObject,
+      include: {
+        role: true,
+      },
+    })
+  }
+
+  createUserIncludeRole(data: Pick<UserType, 'email' | 'password' | 'avatar' | 'name' | 'roleId'>) {
+    return this.prisma.user.create({
+      data,
+      include: {
+        role: true,
+      },
+    })
+  }
 }

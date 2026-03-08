@@ -43,7 +43,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  private async signTokens({
+  async signTokens({
     refreshTokenExp,
     ...payload
   }: AccessTokenPayloadInput & RefreshTokenPayloadInput & { refreshTokenExp?: number }) {

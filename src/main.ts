@@ -3,9 +3,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { cleanupOpenApiDoc } from 'nestjs-zod'
 
 import { AppModule } from 'src/app.module'
+import envConfig from 'src/shared/config'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
+  app.enableCors()
 
   // Swagger
   const openApiDoc = SwaggerModule.createDocument(
@@ -18,7 +20,7 @@ async function bootstrap() {
   )
   SwaggerModule.setup('api', app, cleanupOpenApiDoc(openApiDoc))
 
-  await app.listen(process.env.PORT ?? 3000)
+  await app.listen(envConfig.PORT ?? 3000)
 }
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap()

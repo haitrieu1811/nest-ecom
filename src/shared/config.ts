@@ -15,6 +15,7 @@ if (!fs.existsSync(path.resolve('.env'))) {
 const envSchema = z.object({
   DATABASE_URL: z.string(),
 
+  PORT: z.string(),
   API_KEY: z.string(),
 
   ADMIN_EMAIL: z.string(),
@@ -30,6 +31,11 @@ const envSchema = z.object({
   REFRESH_TOKEN_SECRET: z.string(),
   ACCESS_TOKEN_EXPIRES_IN: z.string(),
   REFRESH_TOKEN_EXPIRES_IN: z.string(),
+
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
+  GOOGLE_REDIRECT_URI: z.string(),
+  GOOGLE_CLIENT_REDIRECT_URI: z.string(),
 })
 
 const envSafeParse = envSchema.safeParse(process.env)

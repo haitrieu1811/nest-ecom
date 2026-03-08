@@ -154,7 +154,7 @@ model RefreshToken {
 
 model Device {
   id         Int      @id @default(autoincrement())
-  userAgent  String   @db.VarChar(100)
+  userAgent  String
   ip         String   @db.VarChar(50)
   isActive   Boolean  @default(true)
   lastActive DateTime @updatedAt

@@ -87,6 +87,15 @@ export const LogoutBodySchema = RefreshTokenBodySchema.pick({
   refreshToken: true,
 })
 
+export const GoogleOAuthLinkStateSchema = DeviceSchema.pick({
+  userAgent: true,
+  ip: true,
+})
+
+export const GetGoogleOAuthLinkResSchema = z.object({
+  url: z.url(),
+})
+
 export type DeviceType = z.infer<typeof DeviceSchema>
 export type RegisterBodyType = z.infer<typeof RegisterBodySchema>
 export type RegisterResType = z.infer<typeof RegisterResSchema>
@@ -96,4 +105,7 @@ export type LoginBodyType = z.infer<typeof LoginBodySchema>
 export type LoginResTyoe = z.infer<typeof LoginResSchema>
 export type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>
 export type RefreshTokenResType = z.infer<typeof TokensResSchema>
+export type TokensResType = z.infer<typeof TokensResSchema>
 export type LogoutBodyType = z.infer<typeof LogoutBodySchema>
+export type GoogleOAuthLinkStateType = z.infer<typeof GoogleOAuthLinkStateSchema>
+export type GetGoogleOAuthLinkResType = z.infer<typeof GetGoogleOAuthLinkResSchema>
