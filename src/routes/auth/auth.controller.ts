@@ -4,6 +4,7 @@ import { ZodResponse } from 'nestjs-zod'
 import {
   LoginBodyDTO,
   LoginResDTO,
+  LogoutBodyDTO,
   RefreshTokenBodyDTO,
   RegisterBodyDTO,
   RegisterResDTO,
@@ -12,6 +13,7 @@ import {
 } from 'src/routes/auth/auth.dto'
 import { AuthService } from 'src/routes/auth/auth.service'
 import UserAgent from 'src/shared/decorators/user-agent.decorator'
+import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
 @Controller('auth')
 export class AuthController {
@@ -21,7 +23,7 @@ export class AuthController {
   @ZodResponse({ type: RegisterResDTO })
   registerClient(@Body() body: RegisterBodyDTO, @Ip() ip: string, @UserAgent() userAgent: string) {
     return this.authService.registerClient({
-      data: body,
+      body,
       ip,
       userAgent,
     })
@@ -36,7 +38,7 @@ export class AuthController {
   @ZodResponse({ type: LoginResDTO })
   login(@Body() body: LoginBodyDTO, @Ip() ip: string, @UserAgent() userAgent: string) {
     return this.authService.login({
-      data: body,
+      body,
       ip,
       userAgent,
     })
@@ -46,9 +48,15 @@ export class AuthController {
   @ZodResponse({ type: TokensResDTO })
   refreshToken(@Body() body: RefreshTokenBodyDTO, @Ip() ip: string, @UserAgent() userAgent: string) {
     return this.authService.refreshToken({
-      bodyRefreshToken: body.refreshToken,
+      body,
       ip,
       userAgent,
     })
+  }
+
+  @Post('logout')
+  @ZodResponse({ type: MessageResDTO })
+  logout(@Body() body: LogoutBodyDTO) {
+    return this.authService.logout(body)
   }
 }

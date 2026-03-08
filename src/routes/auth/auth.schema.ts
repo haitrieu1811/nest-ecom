@@ -83,6 +83,10 @@ export const RefreshTokenBodySchema = z
   })
   .strict()
 
+export const LogoutBodySchema = RefreshTokenBodySchema.pick({
+  refreshToken: true,
+})
+
 export type DeviceType = z.infer<typeof DeviceSchema>
 export type RegisterBodyType = z.infer<typeof RegisterBodySchema>
 export type RegisterResType = z.infer<typeof RegisterResSchema>
@@ -92,3 +96,4 @@ export type LoginBodyType = z.infer<typeof LoginBodySchema>
 export type LoginResTyoe = z.infer<typeof LoginResSchema>
 export type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>
 export type RefreshTokenResType = z.infer<typeof TokensResSchema>
+export type LogoutBodyType = z.infer<typeof LogoutBodySchema>
