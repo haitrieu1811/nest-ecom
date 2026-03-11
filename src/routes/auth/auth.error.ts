@@ -3,25 +3,25 @@ import { UnauthorizedException, UnprocessableEntityException } from '@nestjs/com
 export const EmailAlreadyExistException = new UnprocessableEntityException([
   {
     path: 'email',
-    message: 'Email đã tồn tại trên hệ thống.',
+    message: 'Error.EmailAlreadyExist',
   },
 ])
 
 export const EmailNotFoundException = new UnprocessableEntityException([
   {
     path: 'email',
-    message: 'Không tìm thấy email trên hệ thống.',
+    message: 'Error.EmailNotFound',
   },
 ])
 
 export const IncorrectPasswordException = new UnprocessableEntityException([
   {
     path: 'password',
-    message: 'Mật khẩu không chính xác.',
+    message: 'Error.IncorrectPassword',
   },
 ])
 
-export const RefreshTokenNotExistException = new UnauthorizedException('Refresh token không tồn tại.')
+export const RefreshTokenNotExistException = new UnauthorizedException('Error.RefreshTokenNotExist')
 
 export const InvalidOtpException = new UnprocessableEntityException([
   {
