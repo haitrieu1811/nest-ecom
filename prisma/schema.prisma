@@ -134,9 +134,8 @@ model VerificationCode {
   expiresAt DateTime
   createdAt DateTime             @default(now())
 
-  @@unique([email, type])
+  @@unique([email, code, type])
   @@index([expiresAt])
-  @@index([email, code, type])
 }
 
 model RefreshToken {

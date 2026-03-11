@@ -9,6 +9,8 @@ import {
   RefreshTokenBodySchema,
   RegisterBodySchema,
   RegisterResSchema,
+  ResetPasswordBodySchema,
+  ResetPasswordResSchema,
   SendOTPBodySchema,
   TokensResSchema,
 } from 'src/routes/auth/auth.schema'
@@ -23,3 +25,5 @@ export class RefreshTokenBodyDTO extends createZodDto(RefreshTokenBodySchema) {}
 export class LogoutBodyDTO extends createZodDto(LogoutBodySchema) {}
 export class GoogleOAuthLinkStateDTO extends createZodDto(GoogleOAuthLinkStateSchema) {}
 export class GetGoogleOAuthLinkResDTO extends createZodDto(GetGoogleOAuthLinkResSchema) {}
+export class ResetPasswordBodyDTO extends createZodDto(ResetPasswordBodySchema) {}
+export class ResetPasswordResDTO extends createZodDto(ResetPasswordResSchema) {}

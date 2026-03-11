@@ -8,6 +8,8 @@ export const VerificationCodeType = {
   FORGOT_PASSWORD: 'FORGOT_PASSWORD',
 } as const
 
+export type TypeOfVerificationCode = keyof typeof VerificationCodeType
+
 export const RequestDecodedAccessToken = 'accessToken'
 
 export const AuthorizationTypes = {

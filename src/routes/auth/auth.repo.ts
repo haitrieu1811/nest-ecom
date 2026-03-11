@@ -1,10 +1,23 @@
 import { Injectable } from '@nestjs/common'
 
 import { DeviceType, RegisterBodyType, VerificationCode } from 'src/routes/auth/auth.schema'
+import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { UserType } from 'src/shared/schemas/shared-user.schema'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { PrismaService } from 'src/shared/services/prisma.service'
+
+type VerificationCodeWhereUnique =
+  | {
+      email_code_type: {
+        email: string
+        code: string
+        type: TypeOfVerificationCode
+      }
+    }
+  | {
+      id: number
+    }
 
 @Injectable()
 @SerializeAll()
@@ -43,8 +56,9 @@ export class AuthRepo {
   ): Promise<VerificationCode> {
     return this.prisma.verificationCode.upsert({
       where: {
-        email_type: {
+        email_code_type: {
           email: data.email,
+          code: data.code,
           type: data.type,
         },
       },
@@ -53,14 +67,6 @@ export class AuthRepo {
         code: data.code,
         expiresAt: data.expiresAt,
       },
-    }) as any
-  }
-
-  findFirstVerificationCode(
-    where: Pick<VerificationCode, 'email' | 'code' | 'type'>,
-  ): Promise<VerificationCode | null> {
-    return this.prisma.verificationCode.findFirst({
-      where,
     }) as any
   }
 
@@ -131,6 +137,38 @@ export class AuthRepo {
       include: {
         role: true,
       },
+    })
+  }
+
+  findUniqueVerificationCode(uniqueObject: VerificationCodeWhereUnique) {
+    return this.prisma.verificationCode.findUnique({
+      where: uniqueObject,
+    })
+  }
+
+  updateUser({
+    where,
+    data,
+  }: {
+    where: { id: number } | { email: string } | { phoneNumber: string }
+    data: Omit<Partial<UserType>, 'id' | 'createdAt' | 'updatedAt' | 'createdById' | 'updatedById' | 'roleId' | 'email'>
+  }) {
+    return this.prisma.user.update({
+      where,
+      data,
+      omit: {
+        password: true,
+        totpSecret: true,
+        deletedAt: true,
+        createdById: true,
+        updatedById: true,
+      },
+    })
+  }
+
+  deleteVerificationCode(where: VerificationCodeWhereUnique) {
+    return this.prisma.verificationCode.delete({
+      where,
     })
   }
 }

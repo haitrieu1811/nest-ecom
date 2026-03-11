@@ -22,3 +22,24 @@ export const IncorrectPasswordException = new UnprocessableEntityException([
 ])
 
 export const RefreshTokenNotExistException = new UnauthorizedException('Refresh token không tồn tại.')
+
+export const InvalidOtpException = new UnprocessableEntityException([
+  {
+    path: 'code',
+    message: 'Error.InvalidOtpCode',
+  },
+])
+
+export const ExpiredOtpException = new UnprocessableEntityException([
+  {
+    path: 'code',
+    message: 'Error.ExpiredOtp',
+  },
+])
+
+export const SendOtpFailException = new UnprocessableEntityException([
+  {
+    path: 'code',
+    message: 'Error.SendOtpFail',
+  },
+])

@@ -4,6 +4,7 @@ import { emailSchema, UserSchema } from 'src/shared/schemas/shared-user.schema'
 import { VerificationCodeType } from 'src/shared/constants/auth.constant'
 
 const otpCodeSchema = z.string('OTP là bắt buộc.').length(6, 'OTP phải có độ dài 6 ký tự.')
+const confirmPasswordSchema = z.string('Nhập lại mật khẩu là bắt buộc.')
 
 export const TokensResSchema = z.object({
   accessToken: z.string(),
@@ -27,7 +28,7 @@ export const RegisterBodySchema = UserSchema.pick({
   password: true,
 })
   .extend({
-    confirmPassword: z.string('Nhập lại mật khẩu là bắt buộc.'),
+    confirmPassword: confirmPasswordSchema,
     code: otpCodeSchema,
   })
   .superRefine(({ password, confirmPassword }, ctx) => {
@@ -96,6 +97,27 @@ export const GetGoogleOAuthLinkResSchema = z.object({
   url: z.url(),
 })
 
+export const ResetPasswordBodySchema = UserSchema.pick({
+  email: true,
+  password: true,
+})
+  .extend({
+    confirmPassword: confirmPasswordSchema,
+    code: otpCodeSchema,
+  })
+  .superRefine(({ password, confirmPassword }, ctx) => {
+    if (password !== confirmPassword) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Nhập lại mật khẩu không chính xác.',
+        path: ['confirmPassword'],
+      })
+    }
+  })
+  .strict()
+
+export const ResetPasswordResSchema = LoginResSchema
+
 export type DeviceType = z.infer<typeof DeviceSchema>
 export type RegisterBodyType = z.infer<typeof RegisterBodySchema>
 export type RegisterResType = z.infer<typeof RegisterResSchema>
@@ -109,3 +131,5 @@ export type TokensResType = z.infer<typeof TokensResSchema>
 export type LogoutBodyType = z.infer<typeof LogoutBodySchema>
 export type GoogleOAuthLinkStateType = z.infer<typeof GoogleOAuthLinkStateSchema>
 export type GetGoogleOAuthLinkResType = z.infer<typeof GetGoogleOAuthLinkResSchema>
+export type ResetPasswordBodyType = z.infer<typeof ResetPasswordBodySchema>
+export type ResetPasswordResType = z.infer<typeof ResetPasswordResSchema>

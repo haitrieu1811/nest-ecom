@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common'
+import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JsonWebTokenError } from '@nestjs/jwt'
 import { addMilliseconds } from 'date-fns'
 import omit from 'lodash/omit'
@@ -7,8 +7,11 @@ import ms from 'ms'
 import {
   EmailAlreadyExistException,
   EmailNotFoundException,
+  ExpiredOtpException,
   IncorrectPasswordException,
+  InvalidOtpException,
   RefreshTokenNotExistException,
+  SendOtpFailException,
 } from 'src/routes/auth/auth.error'
 import { AuthRepo } from 'src/routes/auth/auth.repo'
 import {
@@ -19,10 +22,12 @@ import {
   RefreshTokenResType,
   RegisterBodyType,
   RegisterResType,
+  ResetPasswordBodyType,
+  ResetPasswordResType,
   SendOTPBodyType,
 } from 'src/routes/auth/auth.schema'
 import envConfig from 'src/shared/config'
-import { VerificationCodeType } from 'src/shared/constants/auth.constant'
+import { TypeOfVerificationCode, VerificationCodeType } from 'src/shared/constants/auth.constant'
 import { generateOTP } from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
@@ -64,7 +69,7 @@ export class AuthService {
     }
   }
 
-  private async validateRefreshToken(token: string) {
+  async validateRefreshToken(token: string) {
     // Kiểm tra refresh token có hợp lệ không bằng phương thức verify của JWT
     const decodedRefreshToken = await this.tokenService.verifyRefreshToken(token)
     // Kiểm tra refresh token có tồn tại trong DB không
@@ -76,6 +81,23 @@ export class AuthService {
       decodedRefreshToken,
       dbRefreshToken,
     }
+  }
+
+  async validateVerificationCode({ email, code, type }: { email: string; code: string; type: TypeOfVerificationCode }) {
+    const verificationCode = await this.authRepo.findUniqueVerificationCode({
+      email_code_type: {
+        email,
+        code,
+        type,
+      },
+    })
+    if (!verificationCode) {
+      throw InvalidOtpException
+    }
+    if (new Date(verificationCode.expiresAt) < new Date()) {
+      throw ExpiredOtpException
+    }
+    return verificationCode
   }
 
   async register({
@@ -97,27 +119,11 @@ export class AuthService {
       throw EmailAlreadyExistException
     }
     // Kiểm tra OTP
-    const verificationCode = await this.authRepo.findFirstVerificationCode({
+    await this.validateVerificationCode({
       email: body.email,
       code: body.code,
       type: VerificationCodeType.REGISTER,
     })
-    if (!verificationCode) {
-      throw new UnprocessableEntityException([
-        {
-          path: 'code',
-          message: 'OTP không hợp lệ.',
-        },
-      ])
-    }
-    if (new Date(verificationCode.expiresAt) < new Date()) {
-      throw new UnprocessableEntityException([
-        {
-          path: 'code',
-          message: 'OTP đã hết hạn.',
-        },
-      ])
-    }
     // Tạo user mới, device mới trả về user và tokens
     const newUser = await this.authRepo.createUser({
       data: {
@@ -131,11 +137,20 @@ export class AuthService {
       userAgent,
       userId: newUser.id,
     })
-    const { accessToken, refreshToken } = await this.signTokens({
-      userId: newUser.id,
-      roleId: newUser.roleId,
-      deviceId: device.id,
-    })
+    const [{ accessToken, refreshToken }] = await Promise.all([
+      this.signTokens({
+        userId: newUser.id,
+        roleId: newUser.roleId,
+        deviceId: device.id,
+      }),
+      this.authRepo.deleteVerificationCode({
+        email_code_type: {
+          email: body.email,
+          code: body.code,
+          type: VerificationCodeType.REGISTER,
+        },
+      }),
+    ])
     return {
       accessToken,
       refreshToken,
@@ -154,12 +169,14 @@ export class AuthService {
   }
 
   async sendOTP(body: SendOTPBodyType): Promise<MessageResType> {
-    // Kiểm tra email đã tồn tại trên hệ thống hay chưa
     const user = await this.sharedUserRepo.findUnique({
       email: body.email,
     })
-    if (user) {
+    if (body.type === 'REGISTER' && user) {
       throw EmailAlreadyExistException
+    }
+    if (body.type === 'FORGOT_PASSWORD' && !user) {
+      throw EmailNotFoundException
     }
     // Tạo mã OTP
     const otp = generateOTP()
@@ -170,20 +187,20 @@ export class AuthService {
       expiresAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN as ms.StringValue)).toISOString(),
     })
     // Gửi mail
+    const title = body.type === 'REGISTER' ? 'Xác thực email của bạn' : 'Đặt lại mật khẩu'
+    const description =
+      body.type === 'REGISTER'
+        ? 'Nhập mã bên dưới để hoàn tất đăng ký tài khoản.'
+        : 'Nhập mã bên dưới để hoàn tất đặt lại mật khẩu.'
     const $sendMail = this.emailService.sendOTP({
       otp,
       email: body.email,
-      title: 'Xác thực email của bạn',
-      description: 'Nhập mã bên dưới để hoàn tất đăng ký tài khoản.',
+      title,
+      description,
     })
     const [{ error }] = await Promise.all([$sendMail, $createVerificationCode])
     if (error) {
-      throw new UnprocessableEntityException([
-        {
-          path: 'code',
-          message: 'Gửi mã OTP thất bại.',
-        },
-      ])
+      throw SendOtpFailException
     }
     return {
       message: 'Gửi mã OTP thành công.',
@@ -284,6 +301,57 @@ export class AuthService {
         throw new UnauthorizedException(error.message)
       }
       throw error
+    }
+  }
+
+  async resetPassword({
+    body,
+    ip,
+    userAgent,
+  }: {
+    body: ResetPasswordBodyType
+    ip: string
+    userAgent: string
+  }): Promise<ResetPasswordResType> {
+    // Kiểm tra OTP code
+    const verificationCode = await this.validateVerificationCode({
+      email: body.email,
+      code: body.code,
+      type: VerificationCodeType.FORGOT_PASSWORD,
+    })
+    // Đặt lại mật khẩu và xóa OTP đã sử dụng
+    const hashedPassword = await this.hashingService.hash(body.password)
+    const [user] = await Promise.all([
+      this.authRepo.updateUser({
+        where: {
+          email: verificationCode.email,
+        },
+        data: {
+          password: hashedPassword,
+        },
+      }),
+      this.authRepo.deleteVerificationCode({
+        email_code_type: {
+          email: body.email,
+          code: body.code,
+          type: VerificationCodeType.FORGOT_PASSWORD,
+        },
+      }),
+    ])
+    // Cho đăng nhập lại ngay -> trả về client tokens và user
+    const device = await this.authRepo.createDevice({
+      ip,
+      userAgent,
+      userId: user.id,
+    })
+    const tokens = await this.signTokens({
+      userId: user.id,
+      roleId: user.roleId,
+      deviceId: device.id,
+    })
+    return {
+      ...tokens,
+      user: user as any,
     }
   }
 }

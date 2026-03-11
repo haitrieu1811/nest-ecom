@@ -10,6 +10,8 @@ import {
   RefreshTokenBodyDTO,
   RegisterBodyDTO,
   RegisterResDTO,
+  ResetPasswordBodyDTO,
+  ResetPasswordResDTO,
   SendOTPBodyDTO,
   TokensResDTO,
 } from 'src/routes/auth/auth.dto'
@@ -100,5 +102,16 @@ export class AuthController {
           : 'Đã xảy ra lỗi khi đăng nhập bằng Google, vui lòng thử lại bằng cách khác'
       return res.redirect(`${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?errorMessage=${message}`)
     }
+  }
+
+  @Post('reset-password')
+  @IsPublic()
+  @ZodResponse({ type: ResetPasswordResDTO })
+  resetPassword(@Body() body: ResetPasswordBodyDTO, @Ip() ip: string, @UserAgent() userAgent: string) {
+    return this.authService.resetPassword({
+      body,
+      ip,
+      userAgent,
+    })
   }
 }
