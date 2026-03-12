@@ -9,9 +9,8 @@ import { PrismaService } from 'src/shared/services/prisma.service'
 
 type VerificationCodeWhereUnique =
   | {
-      email_code_type: {
+      email_type: {
         email: string
-        code: string
         type: TypeOfVerificationCode
       }
     }
@@ -56,9 +55,8 @@ export class AuthRepo {
   ): Promise<VerificationCode> {
     return this.prisma.verificationCode.upsert({
       where: {
-        email_code_type: {
+        email_type: {
           email: data.email,
-          code: data.code,
           type: data.type,
         },
       },

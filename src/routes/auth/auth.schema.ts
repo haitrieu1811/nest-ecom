@@ -4,6 +4,7 @@ import { emailSchema, UserSchema } from 'src/shared/schemas/shared-user.schema'
 import { VerificationCodeType } from 'src/shared/constants/auth.constant'
 
 const otpCodeSchema = z.string('OTP là bắt buộc.').length(6, 'OTP phải có độ dài 6 ký tự.')
+const totpSecretSchema = z.string('Totp secret là bắt buộc.').length(6, 'Totp secret phải có độ dài 6 ký tự.')
 const confirmPasswordSchema = z.string('Nhập lại mật khẩu là bắt buộc.')
 
 export const TokensResSchema = z.object({
@@ -58,7 +59,12 @@ export const VerificationCodeSchema = z
     email: emailSchema,
     code: otpCodeSchema,
     type: z.enum(
-      [VerificationCodeType.REGISTER, VerificationCodeType.FORGOT_PASSWORD],
+      [
+        VerificationCodeType.REGISTER,
+        VerificationCodeType.FORGOT_PASSWORD,
+        VerificationCodeType.LOGIN,
+        VerificationCodeType.DISABLE_2FA,
+      ],
       'Verification code type không hợp lệ.',
     ),
     expiresAt: z.iso.datetime(),
@@ -74,7 +80,12 @@ export const SendOTPBodySchema = VerificationCodeSchema.pick({
 export const LoginBodySchema = UserSchema.pick({
   email: true,
   password: true,
-}).strict()
+})
+  .extend({
+    code: otpCodeSchema.optional(), // OTP gửi qua email
+    totpSecret: totpSecretSchema.optional(), // Mã 2FA
+  })
+  .strict()
 
 export const LoginResSchema = RegisterResSchema
 
@@ -118,6 +129,28 @@ export const ResetPasswordBodySchema = UserSchema.pick({
 
 export const ResetPasswordResSchema = LoginResSchema
 
+export const Disable2FABodySchema = z
+  .object({
+    totpSecret: totpSecretSchema.optional(),
+    code: otpCodeSchema.optional(),
+  })
+  .strict()
+  .superRefine(({ totpSecret, code }, ctx) => {
+    const message = 'Error.OnlyOneMethodCanBeSent'
+    if ((totpSecret !== undefined) === (code !== undefined)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['totpSecret'],
+        message,
+      })
+      ctx.addIssue({
+        code: 'custom',
+        path: ['code'],
+        message,
+      })
+    }
+  })
+
 export type DeviceType = z.infer<typeof DeviceSchema>
 export type RegisterBodyType = z.infer<typeof RegisterBodySchema>
 export type RegisterResType = z.infer<typeof RegisterResSchema>
@@ -133,3 +166,4 @@ export type GoogleOAuthLinkStateType = z.infer<typeof GoogleOAuthLinkStateSchema
 export type GetGoogleOAuthLinkResType = z.infer<typeof GetGoogleOAuthLinkResSchema>
 export type ResetPasswordBodyType = z.infer<typeof ResetPasswordBodySchema>
 export type ResetPasswordResType = z.infer<typeof ResetPasswordResSchema>
+export type Disable2FABodyType = z.infer<typeof Disable2FABodySchema>

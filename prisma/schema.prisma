@@ -134,7 +134,7 @@ model VerificationCode {
   expiresAt DateTime
   createdAt DateTime             @default(now())
 
-  @@unique([email, code, type])
+  @@unique([email, type])
   @@index([expiresAt])
 }
 
@@ -397,6 +397,8 @@ enum HttpMethod {
 enum VerificationCodeType {
   REGISTER
   FORGOT_PASSWORD
+  LOGIN
+  DISABLE_2FA
 }
 
 enum OrderStatus {

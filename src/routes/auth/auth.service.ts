@@ -85,13 +85,12 @@ export class AuthService {
 
   async validateVerificationCode({ email, code, type }: { email: string; code: string; type: TypeOfVerificationCode }) {
     const verificationCode = await this.authRepo.findUniqueVerificationCode({
-      email_code_type: {
+      email_type: {
         email,
-        code,
         type,
       },
     })
-    if (!verificationCode) {
+    if (!verificationCode || verificationCode.code !== code) {
       throw InvalidOtpException
     }
     if (new Date(verificationCode.expiresAt) < new Date()) {
@@ -144,9 +143,8 @@ export class AuthService {
         deviceId: device.id,
       }),
       this.authRepo.deleteVerificationCode({
-        email_code_type: {
+        email_type: {
           email: body.email,
-          code: body.code,
           type: VerificationCodeType.REGISTER,
         },
       }),
@@ -331,9 +329,8 @@ export class AuthService {
         },
       }),
       this.authRepo.deleteVerificationCode({
-        email_code_type: {
+        email_type: {
           email: body.email,
-          code: body.code,
           type: VerificationCodeType.FORGOT_PASSWORD,
         },
       }),
