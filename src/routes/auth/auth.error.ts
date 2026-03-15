@@ -46,6 +46,8 @@ export const SendOtpFailException = new UnprocessableEntityException([
 
 export const TwoFactorAuthAlreadyEnabledException = new BadRequestException('Error.TwoFactorAuthAlreadyEnabled')
 
+export const TwoFactorAuthNotEnabledException = new BadRequestException('Error.TwoFactorAuthNotEnabled')
+
 export const TOTPCodeOrCodeIsRequiredException = new UnprocessableEntityException([
   {
     path: 'totpCode',

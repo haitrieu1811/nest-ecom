@@ -3,6 +3,7 @@ import type { Response } from 'express'
 import { ZodResponse } from 'nestjs-zod'
 
 import {
+  Disable2FABodyDTO,
   Enable2FAResDTO,
   GetGoogleOAuthLinkResDTO,
   LoginBodyDTO,
@@ -122,5 +123,11 @@ export class AuthController {
   @ZodResponse({ type: Enable2FAResDTO })
   enable2FA(@Body() _: EmptyBodyDTO, @ActiveUser('userId') userId: number) {
     return this.authService.enable2FA(userId)
+  }
+
+  @Post('2fa/disable')
+  @ZodResponse({ type: MessageResDTO })
+  disable2FA(@Body() body: Disable2FABodyDTO, @ActiveUser('userId') userId: number) {
+    return this.authService.disable2FA({ userId, body })
   }
 }

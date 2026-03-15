@@ -15,9 +15,11 @@ import {
   SendOtpFailException,
   TOTPCodeOrCodeIsRequiredException,
   TwoFactorAuthAlreadyEnabledException,
+  TwoFactorAuthNotEnabledException,
 } from 'src/routes/auth/auth.error'
 import { AuthRepo } from 'src/routes/auth/auth.repo'
 import {
+  Disable2FABodyType,
   Enable2FAResType,
   LoginBodyType,
   LoginResTyoe,
@@ -213,7 +215,7 @@ export class AuthService {
         break
       case 'DISABLE_2FA':
         title = 'Tắt xác thực 2 bước'
-        description = 'Nhập mã bên dưới để hoàn tất chức năng xác thực 2 bước.'
+        description = 'Nhập mã bên dưới để hoàn tất việc tắt chức năng xác thực 2 bước.'
         break
       default:
         break
@@ -429,5 +431,46 @@ export class AuthService {
     return result
   }
 
-  async disable2FA() {}
+  async disable2FA({ userId, body }: { userId: number; body: Disable2FABodyType }): Promise<MessageResType> {
+    // Kiểm tra user có tồn tại không
+    const user = await this.sharedUserRepo.findUnique({
+      id: userId,
+    })
+    if (!user) {
+      throw EmailNotFoundException
+    }
+    // Kiểm tra user có bật 2FA chưa - yêu cầu phải bật
+    if (!user.totpSecret) {
+      throw TwoFactorAuthNotEnabledException
+    }
+    // Kiểm tra totpCode hoặc code
+    if (body.totpCode) {
+      const isValid = this.twoFactorAuthService.verifyTOTP({
+        email: user.email,
+        secret: user.totpSecret,
+        token: body.totpCode,
+      })
+      if (!isValid) {
+        throw InvalidTOTPCodeException
+      }
+    } else if (body.code) {
+      await this.validateVerificationCode({
+        email: user.email,
+        type: VerificationCodeType.DISABLE_2FA,
+        code: body.code,
+      })
+    }
+    // Cập nhật totpSecret thành null cho user
+    await this.authRepo.updateUser({
+      where: {
+        id: user.id,
+      },
+      data: {
+        totpSecret: null,
+      },
+    })
+    return {
+      message: 'Success.Disable2FA',
+    }
+  }
 }
