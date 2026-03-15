@@ -14,10 +14,11 @@ import {
   RefreshTokenNotExistException,
   SendOtpFailException,
   TOTPCodeOrCodeIsRequiredException,
-  TwoFactorAuthAlreadySetUpException,
+  TwoFactorAuthAlreadyEnabledException,
 } from 'src/routes/auth/auth.error'
 import { AuthRepo } from 'src/routes/auth/auth.repo'
 import {
+  Enable2FAResType,
   LoginBodyType,
   LoginResTyoe,
   LogoutBodyType,
@@ -28,7 +29,6 @@ import {
   ResetPasswordBodyType,
   ResetPasswordResType,
   SendOTPBodyType,
-  SetUp2FAResType,
 } from 'src/routes/auth/auth.schema'
 import envConfig from 'src/shared/config'
 import { TypeOfVerificationCode, VerificationCodeType } from 'src/shared/constants/auth.constant'
@@ -402,7 +402,7 @@ export class AuthService {
     }
   }
 
-  async setUp2FA(userId: number): Promise<SetUp2FAResType> {
+  async enable2FA(userId: number): Promise<Enable2FAResType> {
     // Kiểm tra user có tồn tại không
     const user = await this.sharedUserRepo.findUnique({
       id: userId,
@@ -412,7 +412,7 @@ export class AuthService {
     }
     // Kiểm tra user đã bật 2FA chưa - yêu cầu là chưa bật
     if (user.totpSecret) {
-      throw TwoFactorAuthAlreadySetUpException
+      throw TwoFactorAuthAlreadyEnabledException
     }
     // Generate totp secret và uri
     const result = this.twoFactorAuthService.generateTOTPSecret(user.email)
@@ -428,4 +428,6 @@ export class AuthService {
     // Trả về cho client totp secret và uri
     return result
   }
+
+  async disable2FA() {}
 }

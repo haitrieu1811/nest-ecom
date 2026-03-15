@@ -145,7 +145,7 @@ export const ResetPasswordBodySchema = UserSchema.pick({
 
 export const ResetPasswordResSchema = LoginResSchema
 
-export const SetUp2FAResSchema = z.object({
+export const Enable2FAResSchema = z.object({
   secret: z.string(),
   uri: z.url(),
 })
@@ -158,6 +158,7 @@ export const Disable2FABodySchema = z
   .strict()
   .superRefine(({ totpCode, code }, ctx) => {
     const message = 'Error.OnlyOneMethodCanBeSent'
+    // Chỉ được truyền một trong hai
     if ((totpCode !== undefined) === (code !== undefined)) {
       ctx.addIssue({
         code: 'custom',
@@ -187,5 +188,5 @@ export type GoogleOAuthLinkStateType = z.infer<typeof GoogleOAuthLinkStateSchema
 export type GetGoogleOAuthLinkResType = z.infer<typeof GetGoogleOAuthLinkResSchema>
 export type ResetPasswordBodyType = z.infer<typeof ResetPasswordBodySchema>
 export type ResetPasswordResType = z.infer<typeof ResetPasswordResSchema>
-export type SetUp2FAResType = z.infer<typeof SetUp2FAResSchema>
+export type Enable2FAResType = z.infer<typeof Enable2FAResSchema>
 export type Disable2FABodyType = z.infer<typeof Disable2FABodySchema>

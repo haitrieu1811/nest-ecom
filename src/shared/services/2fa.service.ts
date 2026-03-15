@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import * as OTPAuth from 'otpauth'
 
-import { SetUp2FAResType } from 'src/routes/auth/auth.schema'
+import { Enable2FAResType } from 'src/routes/auth/auth.schema'
 import envConfig from 'src/shared/config'
 
 @Injectable()
@@ -17,7 +17,7 @@ export class TwoFactorAuthService {
     })
   }
 
-  generateTOTPSecret(email: string): SetUp2FAResType {
+  generateTOTPSecret(email: string): Enable2FAResType {
     const totp = this.createTOTP({ email })
     return {
       secret: totp.secret.base32,
