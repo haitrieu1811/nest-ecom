@@ -10,8 +10,10 @@ import {
   ExpiredOtpException,
   IncorrectPasswordException,
   InvalidOtpException,
+  InvalidTOTPCodeException,
   RefreshTokenNotExistException,
   SendOtpFailException,
+  TOTPCodeOrCodeIsRequiredException,
   TwoFactorAuthAlreadySetUpException,
 } from 'src/routes/auth/auth.error'
 import { AuthRepo } from 'src/routes/auth/auth.repo'
@@ -177,7 +179,12 @@ export class AuthService {
     if (body.type === 'REGISTER' && user) {
       throw EmailAlreadyExistException
     }
-    if (body.type === 'FORGOT_PASSWORD' && !user) {
+    if (
+      [VerificationCodeType.LOGIN, VerificationCodeType.DISABLE_2FA, VerificationCodeType.FORGOT_PASSWORD].includes(
+        body.type as any,
+      ) &&
+      !user
+    ) {
       throw EmailNotFoundException
     }
     // Tạo mã OTP
@@ -189,11 +196,28 @@ export class AuthService {
       expiresAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN as ms.StringValue)).toISOString(),
     })
     // Gửi mail
-    const title = body.type === 'REGISTER' ? 'Xác thực email của bạn' : 'Đặt lại mật khẩu'
-    const description =
-      body.type === 'REGISTER'
-        ? 'Nhập mã bên dưới để hoàn tất đăng ký tài khoản.'
-        : 'Nhập mã bên dưới để hoàn tất đặt lại mật khẩu.'
+    let title: string = ''
+    let description: string = ''
+    switch (body.type) {
+      case 'REGISTER':
+        title = 'Xác thực email của bạn'
+        description = 'Nhập mã bên dưới để hoàn tất đăng ký tài khoản.'
+        break
+      case 'FORGOT_PASSWORD':
+        title = 'Đặt lại mật khẩu'
+        description = 'Nhập mã bên dưới để hoàn tất đặt lại mật khẩu.'
+        break
+      case 'LOGIN':
+        title = 'Xác thực đăng nhập'
+        description = 'Nhập mã bên dưới để hoàn tất việc đăng nhập.'
+        break
+      case 'DISABLE_2FA':
+        title = 'Tắt xác thực 2 bước'
+        description = 'Nhập mã bên dưới để hoàn tất chức năng xác thực 2 bước.'
+        break
+      default:
+        break
+    }
     const $sendMail = this.emailService.sendOTP({
       otp,
       email: body.email,
@@ -221,6 +245,28 @@ export class AuthService {
     const isCorrectPassword = await this.hashingService.compare(body.password, user.password)
     if (!isCorrectPassword) {
       throw IncorrectPasswordException
+    }
+    // Nếu user đã bật 2FA thì kiểm tra code hoặc TOTP code
+    if (user.totpSecret) {
+      if (!body.totpCode && !body.code) {
+        throw TOTPCodeOrCodeIsRequiredException
+      }
+      if (body.totpCode) {
+        const isValid = this.twoFactorAuthService.verifyTOTP({
+          email: body.email,
+          secret: user.totpSecret,
+          token: body.totpCode,
+        })
+        if (!isValid) {
+          throw InvalidTOTPCodeException
+        }
+      } else if (body.code) {
+        await this.validateVerificationCode({
+          email: body.email,
+          code: body.code,
+          type: VerificationCodeType.LOGIN,
+        })
+      }
     }
     // Tạo thiết bị đăng nhập mới
     const device = await this.authRepo.createDevice({

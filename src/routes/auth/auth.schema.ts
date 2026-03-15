@@ -3,7 +3,8 @@ import z from 'zod'
 import { emailSchema, UserSchema } from 'src/shared/schemas/shared-user.schema'
 import { VerificationCodeType } from 'src/shared/constants/auth.constant'
 
-const otpCodeSchema = z.string('OTP là bắt buộc.').length(6, 'OTP phải có độ dài 6 ký tự.')
+const otpCodeSchema = z.string('OTP code là bắt buộc.').length(6, 'OTP code phải có độ dài 6 ký tự.')
+const totpCodeSchema = z.string('TOTP code là bắt buộc.').length(6, 'TOTP code phải có độ dài 6 ký tự.')
 const confirmPasswordSchema = z.string('Nhập lại mật khẩu là bắt buộc.')
 
 export const TokensResSchema = z.object({
@@ -82,9 +83,25 @@ export const LoginBodySchema = UserSchema.pick({
 })
   .extend({
     code: otpCodeSchema.optional(), // OTP gửi qua email
-    totpSecret: z.string().optional(), // Mã 2FA
+    totpCode: totpCodeSchema.optional(), // Mã 2FA
   })
   .strict()
+  .superRefine(({ totpCode, code }, ctx) => {
+    // Không được truyền một lúc cả hai
+    const message = 'Error.OnlyOneMethodCanBeSent'
+    if (totpCode !== undefined && code !== undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['totpCode'],
+        message,
+      })
+      ctx.addIssue({
+        code: 'custom',
+        path: ['code'],
+        message,
+      })
+    }
+  })
 
 export const LoginResSchema = RegisterResSchema
 
@@ -135,16 +152,16 @@ export const SetUp2FAResSchema = z.object({
 
 export const Disable2FABodySchema = z
   .object({
-    totpSecret: z.string().optional(),
+    totpCode: totpCodeSchema.optional(),
     code: otpCodeSchema.optional(),
   })
   .strict()
-  .superRefine(({ totpSecret, code }, ctx) => {
+  .superRefine(({ totpCode, code }, ctx) => {
     const message = 'Error.OnlyOneMethodCanBeSent'
-    if ((totpSecret !== undefined) === (code !== undefined)) {
+    if ((totpCode !== undefined) === (code !== undefined)) {
       ctx.addIssue({
         code: 'custom',
-        path: ['totpSecret'],
+        path: ['totpCode'],
         message,
       })
       ctx.addIssue({
