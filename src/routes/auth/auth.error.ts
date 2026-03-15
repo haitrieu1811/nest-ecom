@@ -1,4 +1,4 @@
-import { UnauthorizedException, UnprocessableEntityException } from '@nestjs/common'
+import { BadRequestException, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common'
 
 export const EmailAlreadyExistException = new UnprocessableEntityException([
   {
@@ -43,3 +43,5 @@ export const SendOtpFailException = new UnprocessableEntityException([
     message: 'Error.SendOtpFail',
   },
 ])
+
+export const TwoFactorAuthAlreadySetUpException = new BadRequestException('Error.TwoFactorAuthAlreadySetUp')

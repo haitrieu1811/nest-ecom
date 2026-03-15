@@ -15,6 +15,7 @@ if (!fs.existsSync(path.resolve('.env'))) {
 const envSchema = z.object({
   DATABASE_URL: z.string(),
 
+  APP_NAME: z.string(),
   PORT: z.string(),
   API_KEY: z.string(),
 

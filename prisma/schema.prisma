@@ -57,7 +57,7 @@ model User {
   name        String?    @db.VarChar(100)
   phoneNumber String?    @unique @db.VarChar(11)
   avatar      String?
-  totpSecret  String?    @db.VarChar(6)
+  totpSecret  String?    @db.VarChar(100)
   status      UserStatus @default(ACTIVE)
 
   deletedAt DateTime?

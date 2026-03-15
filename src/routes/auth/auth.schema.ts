@@ -4,7 +4,6 @@ import { emailSchema, UserSchema } from 'src/shared/schemas/shared-user.schema'
 import { VerificationCodeType } from 'src/shared/constants/auth.constant'
 
 const otpCodeSchema = z.string('OTP là bắt buộc.').length(6, 'OTP phải có độ dài 6 ký tự.')
-const totpSecretSchema = z.string('Totp secret là bắt buộc.').length(6, 'Totp secret phải có độ dài 6 ký tự.')
 const confirmPasswordSchema = z.string('Nhập lại mật khẩu là bắt buộc.')
 
 export const TokensResSchema = z.object({
@@ -83,7 +82,7 @@ export const LoginBodySchema = UserSchema.pick({
 })
   .extend({
     code: otpCodeSchema.optional(), // OTP gửi qua email
-    totpSecret: totpSecretSchema.optional(), // Mã 2FA
+    totpSecret: z.string().optional(), // Mã 2FA
   })
   .strict()
 
@@ -129,9 +128,14 @@ export const ResetPasswordBodySchema = UserSchema.pick({
 
 export const ResetPasswordResSchema = LoginResSchema
 
+export const SetUp2FAResSchema = z.object({
+  secret: z.string(),
+  uri: z.url(),
+})
+
 export const Disable2FABodySchema = z
   .object({
-    totpSecret: totpSecretSchema.optional(),
+    totpSecret: z.string().optional(),
     code: otpCodeSchema.optional(),
   })
   .strict()
@@ -166,4 +170,5 @@ export type GoogleOAuthLinkStateType = z.infer<typeof GoogleOAuthLinkStateSchema
 export type GetGoogleOAuthLinkResType = z.infer<typeof GetGoogleOAuthLinkResSchema>
 export type ResetPasswordBodyType = z.infer<typeof ResetPasswordBodySchema>
 export type ResetPasswordResType = z.infer<typeof ResetPasswordResSchema>
+export type SetUp2FAResType = z.infer<typeof SetUp2FAResSchema>
 export type Disable2FABodyType = z.infer<typeof Disable2FABodySchema>

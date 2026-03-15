@@ -5,6 +5,7 @@ import { AccessTokenGuard } from 'src/shared/guards/access-token.guard'
 import { ApiKeyGuard } from 'src/shared/guards/api-key.guard'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
+import { TwoFactorAuthService } from 'src/shared/services/2fa.service'
 import { EmailService } from 'src/shared/services/email.service'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -19,6 +20,7 @@ const SHARED_PROVIDERS = [
   TokenService,
   AccessTokenGuard,
   ApiKeyGuard,
+  TwoFactorAuthService,
 ]
 
 @Global()

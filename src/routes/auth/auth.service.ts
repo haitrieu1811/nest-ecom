@@ -12,6 +12,7 @@ import {
   InvalidOtpException,
   RefreshTokenNotExistException,
   SendOtpFailException,
+  TwoFactorAuthAlreadySetUpException,
 } from 'src/routes/auth/auth.error'
 import { AuthRepo } from 'src/routes/auth/auth.repo'
 import {
@@ -25,6 +26,7 @@ import {
   ResetPasswordBodyType,
   ResetPasswordResType,
   SendOTPBodyType,
+  SetUp2FAResType,
 } from 'src/routes/auth/auth.schema'
 import envConfig from 'src/shared/config'
 import { TypeOfVerificationCode, VerificationCodeType } from 'src/shared/constants/auth.constant'
@@ -32,6 +34,7 @@ import { generateOTP } from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
 import { MessageResType } from 'src/shared/schemas/response.schema'
+import { TwoFactorAuthService } from 'src/shared/services/2fa.service'
 import { EmailService } from 'src/shared/services/email.service'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { TokenService } from 'src/shared/services/token.service'
@@ -46,6 +49,7 @@ export class AuthService {
     private readonly emailService: EmailService,
     private readonly hashingService: HashingService,
     private readonly tokenService: TokenService,
+    private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
   async signTokens({
@@ -350,5 +354,32 @@ export class AuthService {
       ...tokens,
       user: user as any,
     }
+  }
+
+  async setUp2FA(userId: number): Promise<SetUp2FAResType> {
+    // Kiểm tra user có tồn tại không
+    const user = await this.sharedUserRepo.findUnique({
+      id: userId,
+    })
+    if (!user) {
+      throw EmailNotFoundException
+    }
+    // Kiểm tra user đã bật 2FA chưa - yêu cầu là chưa bật
+    if (user.totpSecret) {
+      throw TwoFactorAuthAlreadySetUpException
+    }
+    // Generate totp secret và uri
+    const result = this.twoFactorAuthService.generateTOTPSecret(user.email)
+    // Cập nhật totpSecret cho user trong DB
+    await this.authRepo.updateUser({
+      where: {
+        id: user.id,
+      },
+      data: {
+        totpSecret: result.secret,
+      },
+    })
+    // Trả về cho client totp secret và uri
+    return result
   }
 }

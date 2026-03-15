@@ -13,13 +13,16 @@ import {
   ResetPasswordBodyDTO,
   ResetPasswordResDTO,
   SendOTPBodyDTO,
+  SetUp2FAResDTO,
   TokensResDTO,
 } from 'src/routes/auth/auth.dto'
 import { AuthService } from 'src/routes/auth/auth.service'
 import { GoogleService } from 'src/routes/auth/google.service'
 import envConfig from 'src/shared/config'
+import ActiveUser from 'src/shared/decorators/active-user.decorator'
 import { IsPublic } from 'src/shared/decorators/auth.decorator'
 import UserAgent from 'src/shared/decorators/user-agent.decorator'
+import { EmptyBodyDTO } from 'src/shared/dtos/request.dto'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
 @Controller('auth')
@@ -113,5 +116,11 @@ export class AuthController {
       ip,
       userAgent,
     })
+  }
+
+  @Post('2fa/setup')
+  @ZodResponse({ type: SetUp2FAResDTO })
+  setUp2FA(@Body() _: EmptyBodyDTO, @ActiveUser('userId') userId: number) {
+    return this.authService.setUp2FA(userId)
   }
 }
