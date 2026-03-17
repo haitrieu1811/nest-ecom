@@ -8,7 +8,7 @@ import {
   LanguageIdParamSchema,
   UpdateLanguageBodySchema,
   UpdateLanguageResSchema,
-} from 'src/routes/languages/language.schema'
+} from 'src/routes/language/language.schema'
 
 export class CreateLanguageBodyDTO extends createZodDto(CreateLanguageBodySchema) {}
 export class CreateLanguageResDTO extends createZodDto(CreateLanguageResSchema) {}

@@ -1,4 +1,5 @@
 import { randomInt } from 'crypto'
+
 import { Prisma } from 'generated/prisma/client'
 
 export const generateOTP = () => {

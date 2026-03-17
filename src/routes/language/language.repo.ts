@@ -5,7 +5,7 @@ import {
   GetLanguageResType,
   LanguageType,
   UpdateLanguageResType,
-} from 'src/routes/languages/language.schema'
+} from 'src/routes/language/language.schema'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { PrismaService } from 'src/shared/services/prisma.service'
 

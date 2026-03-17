@@ -37,7 +37,7 @@ model Role {
 model Permission {
   id          Int        @id @default(autoincrement())
   name        String     @db.VarChar(50)
-  description String     @db.VarChar(200)
+  description String     @default("") @db.VarChar(200)
   path        String     @db.VarChar(100)
   method      HttpMethod
   deletedAt   DateTime?
@@ -51,6 +51,7 @@ model Permission {
 
   roles Role[]
 
+  @@unique([path, method])
   @@index([deletedAt])
 }
 
