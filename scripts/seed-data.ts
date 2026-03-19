@@ -49,7 +49,9 @@ main()
   .then(({ createdRoleCount, user }) => {
     console.log(`Đã khởi tạo thành công ${createdRoleCount} role.`)
     console.log('Đã khởi tạo thành công user admin: ', user)
+    process.exit(1)
   })
   .catch((error) => {
     console.log(error)
+    process.exit(1)
   })

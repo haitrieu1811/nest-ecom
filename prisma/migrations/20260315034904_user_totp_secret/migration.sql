@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "User" ALTER COLUMN "totpSecret" SET DATA TYPE VARCHAR(100);

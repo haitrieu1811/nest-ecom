@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "seed-data": "bun run scripts/seed-data",
+    "create-permissions": "bun run scripts/create-permissions",
     "email:dev": "email dev",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

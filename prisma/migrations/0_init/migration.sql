@@ -1,3 +1,6 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateEnum
 CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'BLOCKED');
 
@@ -5,7 +8,7 @@ CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'BLOCKED');
 CREATE TYPE "HttpMethod" AS ENUM ('GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD');
 
 -- CreateEnum
-CREATE TYPE "VerificationCodeType" AS ENUM ('REGISTER', 'FORGOT_PASSWORD');
+CREATE TYPE "VerificationCodeType" AS ENUM ('REGISTER', 'FORGOT_PASSWORD', 'LOGIN', 'DISABLE_2FA');
 
 -- CreateEnum
 CREATE TYPE "OrderStatus" AS ENUM ('PENDING_CONFIRMATION', 'PENDING_PICKUP', 'PENDING_DELIVERY', 'DELIVERED', 'RETURNED', 'CANCELLED');
@@ -14,7 +17,7 @@ CREATE TYPE "OrderStatus" AS ENUM ('PENDING_CONFIRMATION', 'PENDING_PICKUP', 'PE
 CREATE TABLE "Role" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(50) NOT NULL,
-    "description" VARCHAR(200) NOT NULL,
+    "description" VARCHAR(200) NOT NULL DEFAULT '',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -29,7 +32,7 @@ CREATE TABLE "Role" (
 CREATE TABLE "Permission" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(50) NOT NULL,
-    "description" VARCHAR(200) NOT NULL,
+    "description" VARCHAR(200) NOT NULL DEFAULT '',
     "path" VARCHAR(100) NOT NULL,
     "method" "HttpMethod" NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -45,11 +48,11 @@ CREATE TABLE "Permission" (
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "email" TEXT NOT NULL,
-    "password" VARCHAR(32) NOT NULL,
-    "name" VARCHAR(100) NOT NULL,
-    "phoneNumber" VARCHAR(11) NOT NULL,
+    "password" TEXT NOT NULL,
+    "name" VARCHAR(100),
+    "phoneNumber" VARCHAR(11),
     "avatar" TEXT,
-    "totpSecret" VARCHAR(6),
+    "totpSecret" VARCHAR(100),
     "status" "UserStatus" NOT NULL DEFAULT 'ACTIVE',
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -63,9 +66,8 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "Language" (
-    "id" SERIAL NOT NULL,
+    "id" VARCHAR(5) NOT NULL,
     "name" VARCHAR(100) NOT NULL,
-    "code" VARCHAR(5) NOT NULL,
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -93,7 +95,21 @@ CREATE TABLE "RefreshToken" (
     "token" TEXT NOT NULL,
     "expiresAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" INTEGER NOT NULL
+    "userId" INTEGER NOT NULL,
+    "deviceId" INTEGER NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "Device" (
+    "id" SERIAL NOT NULL,
+    "userAgent" TEXT NOT NULL,
+    "ip" VARCHAR(50) NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "lastActive" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" INTEGER NOT NULL,
+
+    CONSTRAINT "Device_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -136,7 +152,7 @@ CREATE TABLE "ProductTranslation" (
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "languageId" INTEGER NOT NULL,
+    "languageId" TEXT NOT NULL,
     "productId" INTEGER NOT NULL,
     "createdById" INTEGER,
     "updatedById" INTEGER,
@@ -167,7 +183,7 @@ CREATE TABLE "CategoryTranslation" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "categoryId" INTEGER NOT NULL,
-    "languageId" INTEGER NOT NULL,
+    "languageId" TEXT NOT NULL,
     "createdById" INTEGER NOT NULL,
     "updatedById" INTEGER NOT NULL,
 
@@ -293,25 +309,61 @@ CREATE TABLE "_PermissionToRole" (
 CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
 
 -- CreateIndex
+CREATE INDEX "Role_deletedAt_idx" ON "Role"("deletedAt");
+
+-- CreateIndex
+CREATE INDEX "Permission_deletedAt_idx" ON "Permission"("deletedAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Permission_path_method_key" ON "Permission"("path", "method");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_phoneNumber_key" ON "User"("phoneNumber");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Language_code_key" ON "Language"("code");
+CREATE INDEX "User_deletedAt_idx" ON "User"("deletedAt");
 
 -- CreateIndex
-CREATE INDEX "VerificationCode_email_code_type_idx" ON "VerificationCode"("email", "code", "type");
+CREATE INDEX "Language_deletedAt_idx" ON "Language"("deletedAt");
 
 -- CreateIndex
 CREATE INDEX "VerificationCode_expiresAt_idx" ON "VerificationCode"("expiresAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "VerificationCode_email_type_key" ON "VerificationCode"("email", "type");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "RefreshToken_token_key" ON "RefreshToken"("token");
 
 -- CreateIndex
 CREATE INDEX "RefreshToken_expiresAt_idx" ON "RefreshToken"("expiresAt");
+
+-- CreateIndex
+CREATE INDEX "Brand_deletedAt_idx" ON "Brand"("deletedAt");
+
+-- CreateIndex
+CREATE INDEX "Product_deletedAt_idx" ON "Product"("deletedAt");
+
+-- CreateIndex
+CREATE INDEX "ProductTranslation_deletedAt_idx" ON "ProductTranslation"("deletedAt");
+
+-- CreateIndex
+CREATE INDEX "Category_deletedAt_idx" ON "Category"("deletedAt");
+
+-- CreateIndex
+CREATE INDEX "CategoryTranslation_deletedAt_idx" ON "CategoryTranslation"("deletedAt");
+
+-- CreateIndex
+CREATE INDEX "Variant_deletedAt_idx" ON "Variant"("deletedAt");
+
+-- CreateIndex
+CREATE INDEX "VariantOption_deletedAt_idx" ON "VariantOption"("deletedAt");
+
+-- CreateIndex
+CREATE INDEX "SKU_deletedAt_idx" ON "SKU"("deletedAt");
 
 -- CreateIndex
 CREATE INDEX "_PermissionToRole_B_index" ON "_PermissionToRole"("B");
@@ -348,6 +400,12 @@ ALTER TABLE "Language" ADD CONSTRAINT "Language_deletedById_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_deviceId_fkey" FOREIGN KEY ("deviceId") REFERENCES "Device"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Device" ADD CONSTRAINT "Device_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "Brand" ADD CONSTRAINT "Brand_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
@@ -462,3 +520,4 @@ ALTER TABLE "_PermissionToRole" ADD CONSTRAINT "_PermissionToRole_A_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "_PermissionToRole" ADD CONSTRAINT "_PermissionToRole_B_fkey" FOREIGN KEY ("B") REFERENCES "Role"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
