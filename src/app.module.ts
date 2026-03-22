@@ -7,13 +7,14 @@ import { AppService } from 'src/app.service'
 import { AuthModule } from 'src/routes/auth/auth.module'
 import { LanguageModule } from 'src/routes/language/language.module'
 import { PermissionModule } from 'src/routes/permission/permission.module'
+import { RoleModule } from 'src/routes/role/role.module'
 import { HttpExceptionFilter } from 'src/shared/filters/http-exception.filter'
 import { AuthenticationGuard } from 'src/shared/guards/authentication.guard'
 import CustomZodValidationPipe from 'src/shared/pipes/custom-zod-validation.pipe'
 import { SharedModule } from 'src/shared/shared.module'
 
 @Module({
-  imports: [SharedModule, AuthModule, LanguageModule, PermissionModule],
+  imports: [SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule],
   controllers: [AppController],
   providers: [
     {

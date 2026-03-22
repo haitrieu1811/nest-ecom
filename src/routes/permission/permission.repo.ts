@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common'
 
-import {
-  CreatePermissionBodyType,
-  CreatePermissionResType,
-  PermissionType,
-} from 'src/routes/permission/permission.schema'
+import { CreatePermissionBodyType, CreatePermissionResType } from 'src/routes/permission/permission.schema'
 import { HttpMethodType } from 'src/shared/constants/permission.constant'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
+import { PermissionType } from 'src/shared/schemas/shared-permission.schema'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 type PermissionWhereUniqueObjectType =
