@@ -12,7 +12,6 @@ import {
 } from 'src/routes/role/role.dto'
 import { RoleService } from 'src/routes/role/role.service'
 import ActiveUser from 'src/shared/decorators/active-user.decorator'
-import { IsPublic } from 'src/shared/decorators/auth.decorator'
 import { PaginationQueryDTO } from 'src/shared/dtos/request.dto'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
@@ -33,14 +32,12 @@ export class RoleController {
   }
 
   @Get()
-  @IsPublic()
   @ZodResponse({ type: GetRolesResDTO })
   getRoles(@Query() query: PaginationQueryDTO) {
     return this.roleService.getRoles(query)
   }
 
   @Get(':roleId')
-  @IsPublic()
   @ZodResponse({ type: GetRoleResDTO })
   getRole(@Param() param: RoleIdParamDTO) {
     return this.roleService.getRole(param.roleId)

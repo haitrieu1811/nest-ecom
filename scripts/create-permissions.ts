@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core'
 
 import { AppModule } from 'src/app.module'
 import { HttpMethodType } from 'src/shared/constants/permission.constant'
+import { ROLE_NAME } from 'src/shared/constants/role.constant'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 const prisma = new PrismaService()
@@ -58,10 +59,40 @@ async function bootstrap() {
     }),
     prisma.permission.createMany({
       data: routesToAdd,
+      skipDuplicates: true,
     }),
   ])
   console.log(`Đã xóa ${deletedCount} permissions.`)
   console.log(`Đã tạo ${createdCount} permissions.`)
+
+  // Lấy lại danh sách các permission sau khi thêm và xóa thành công
+  const $updatedPermissionsInDB = prisma.permission.findMany({
+    where: {
+      deletedAt: null,
+    },
+  })
+  // Tìm role ADMIN
+  const $adminRole = prisma.role.findUniqueOrThrow({
+    where: {
+      name: ROLE_NAME.ADMIN,
+      deletedAt: null,
+    },
+  })
+  const [updatedPermissionsInDB, adminRole] = await Promise.all([$updatedPermissionsInDB, $adminRole])
+  // Thêm tất cả permission cho role ADMIN
+  await prisma.role.update({
+    where: {
+      id: adminRole.id,
+      deletedAt: null,
+    },
+    data: {
+      permissions: {
+        set: updatedPermissionsInDB.map((item) => ({ id: item.id })),
+      },
+    },
+  })
+  console.log(`Đã thêm ${updatedPermissionsInDB.length} permissions cho role ADMIN`)
+
   process.exit(1)
 }
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
