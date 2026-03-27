@@ -9,7 +9,7 @@ export class ApiKeyGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const apiKey = request.headers['x-api-key']
     if (apiKey !== envConfig.API_KEY) {
-      throw new UnauthorizedException()
+      throw new UnauthorizedException('Error.APIKeyIsInvalid')
     }
     return true
   }
