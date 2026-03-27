@@ -22,7 +22,11 @@ import { MessageResType } from 'src/shared/schemas/response.schema'
 
 @Injectable()
 export class RoleService {
-  constructor(private readonly roleRepo: RoleRepo) {}
+  baseRoles: string[]
+
+  constructor(private readonly roleRepo: RoleRepo) {
+    this.baseRoles = [ROLE_NAME.ADMIN, ROLE_NAME.SELLER, ROLE_NAME.CLIENT]
+  }
 
   async createRole({ body, userId }: { body: CreateRoleBodyType; userId: number }): Promise<CreateRoleResType> {
     try {
@@ -55,8 +59,8 @@ export class RoleService {
       if (!role) {
         throw RoleNotFoundException
       }
-      // Không cho phép bất cứ ai cập nhật role Admin
-      if (role.name === ROLE_NAME.ADMIN) {
+      // Không cho phép bất cứ ai cập nhật base role (Admin, Seller, Client)
+      if (this.baseRoles.includes(role.name)) {
         throw ProhibitedActionOnBaseRoleException
       }
       const updatedRole = await this.roleRepo.update({
@@ -108,8 +112,7 @@ export class RoleService {
       throw RoleNotFoundException
     }
     // Không cho phép bất cứ ai xóa 3 base role (Admin, Seller, Client)
-    const baseRoles: string[] = [ROLE_NAME.ADMIN, ROLE_NAME.SELLER, ROLE_NAME.CLIENT]
-    if (baseRoles.includes(role.name)) {
+    if (this.baseRoles.includes(role.name)) {
       throw ProhibitedActionOnBaseRoleException
     }
     await this.roleRepo.delete({

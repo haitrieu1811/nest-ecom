@@ -23,15 +23,18 @@ async function bootstrap() {
     path: string
     method: HttpMethodType
     name: string
+    module: string
   }[] = router.stack
     .map((layer) => {
       if (layer.route) {
         const path = layer.route?.path
         const method = String(layer.route?.stack[0].method).toUpperCase()
+        const module = String(layer.route?.path)?.split('/')[1]
         return {
           path,
           method,
           name: `${method} ${path}`,
+          module,
         }
       }
     })
@@ -91,7 +94,7 @@ async function bootstrap() {
       },
     },
   })
-  console.log(`Đã thêm ${updatedPermissionsInDB.length} permissions cho role ADMIN`)
+  console.log(`Đã thêm ${updatedPermissionsInDB.length} permissions cho role ${adminRole.name}`)
 
   process.exit(1)
 }
