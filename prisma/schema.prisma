@@ -65,10 +65,9 @@ model User {
   avatar      String?
   totpSecret  String?    @db.VarChar(100)
   status      UserStatus @default(ACTIVE)
-
-  deletedAt DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  deletedAt   DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   roleId      Int
   role        Role  @relation("UserRole", fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)

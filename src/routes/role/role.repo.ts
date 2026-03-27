@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 
-import { RoleIncludePermissionsType, RoleType } from 'src/routes/role/role.schema'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
+import { RoleIncludePermissionsType, RoleType } from 'src/shared/schemas/shared-role.schema'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 type RoleWhereUniqueObject =
