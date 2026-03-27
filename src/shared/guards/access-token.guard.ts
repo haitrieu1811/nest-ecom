@@ -43,7 +43,7 @@ export class AccessTokenGuard implements CanActivate {
     }
   }
 
-  private async validatePermission({ roleId }: AccessTokenPayload, request): Promise<boolean> {
+  private async validatePermission({ roleId }: AccessTokenPayload, request: any): Promise<boolean> {
     const path = request?.route?.path
     const method = request?.method
     const role = await this.prisma.role.findUniqueOrThrow({

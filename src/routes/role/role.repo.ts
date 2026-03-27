@@ -72,6 +72,10 @@ export class RoleRepo {
           where: {
             deletedAt: null,
           },
+          select: {
+            path: true,
+            method: true,
+          },
         },
       },
     }) as any
@@ -111,6 +115,10 @@ export class RoleRepo {
         permissions: {
           where: {
             deletedAt: null,
+          },
+          select: {
+            path: true,
+            method: true,
           },
         },
       },

@@ -1,7 +1,7 @@
+import z from 'zod'
+
 import { PaginationResSchema } from 'src/shared/schemas/response.schema'
 import { PermissionSchema } from 'src/shared/schemas/shared-permission.schema'
-
-import z from 'zod'
 
 export const RoleSchema = z
   .object({
@@ -18,7 +18,12 @@ export const RoleSchema = z
   .strict()
 
 export const RoleIncludePermissions = RoleSchema.extend({
-  permissions: z.array(PermissionSchema),
+  permissions: z.array(
+    PermissionSchema.pick({
+      path: true,
+      method: true,
+    }),
+  ),
 })
 
 export const CreateRoleBodySchema = RoleSchema.pick({

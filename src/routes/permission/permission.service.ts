@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
-import { PermissionAlreadyExistException, PermissionNotFoundException } from 'src/routes/permission/permission.error'
+import { PermissionAlreadyExistException } from 'src/routes/permission/permission.error'
 import { PermissionRepo } from 'src/routes/permission/permission.repo'
 import {
   CreatePermissionBodyType,
@@ -9,6 +9,7 @@ import {
   UpdatePermissionBodyType,
   UpdatePermissionResType,
 } from 'src/routes/permission/permission.schema'
+import { PermissionNotFoundException } from 'src/shared/errors/shared-permission.error'
 import { isNotFoundPrismaErrror, isUniqueConstraintPrismaErrror } from 'src/shared/helpers'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'

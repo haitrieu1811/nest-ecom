@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 
 import {
+  ProhibitedActionOnBaseRoleException,
   RoleAlreadyExistException,
   RoleNotFoundException,
-  RoleOrPermissionNotFoundException,
 } from 'src/routes/role/role.error'
 import { RoleRepo } from 'src/routes/role/role.repo'
 import {
@@ -14,6 +14,8 @@ import {
   UpdateRoleBodyType,
   UpdateRoleResType,
 } from 'src/routes/role/role.schema'
+import { ROLE_NAME } from 'src/shared/constants/role.constant'
+import { PermissionNotFoundException } from 'src/shared/errors/shared-permission.error'
 import { isNotFoundPrismaErrror, isUniqueConstraintPrismaErrror } from 'src/shared/helpers'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
@@ -47,19 +49,30 @@ export class RoleService {
     roleId: number
   }): Promise<UpdateRoleResType> {
     try {
-      const result = await this.roleRepo.update({
+      const role = await this.roleRepo.findUnique({
+        id: roleId,
+      })
+      if (!role) {
+        throw RoleNotFoundException
+      }
+      // Không cho phép bất cứ ai cập nhật role Admin
+      if (role.name === ROLE_NAME.ADMIN) {
+        throw ProhibitedActionOnBaseRoleException
+      }
+      const updatedRole = await this.roleRepo.update({
         where: {
           id: roleId,
         },
         data: body,
         userId,
       })
-      return result
+      return updatedRole
     } catch (error) {
       if (isUniqueConstraintPrismaErrror(error)) {
         throw RoleAlreadyExistException
-      } else if (isNotFoundPrismaErrror(error)) {
-        throw RoleOrPermissionNotFoundException
+      }
+      if (isNotFoundPrismaErrror(error)) {
+        throw PermissionNotFoundException
       }
       throw error
     }
@@ -88,21 +101,25 @@ export class RoleService {
   }
 
   async deleteRole(roleId: number): Promise<MessageResType> {
-    try {
-      await this.roleRepo.delete({
-        where: {
-          id: roleId,
-        },
-        isHard: true,
-      })
-      return {
-        message: 'Success.DeletedRole',
-      }
-    } catch (error) {
-      if (isNotFoundPrismaErrror(error)) {
-        throw RoleNotFoundException
-      }
-      throw error
+    const role = await this.roleRepo.findUnique({
+      id: roleId,
+    })
+    if (!role) {
+      throw RoleNotFoundException
+    }
+    // Không cho phép bất cứ ai xóa 3 base role (Admin, Seller, Client)
+    const baseRoles: string[] = [ROLE_NAME.ADMIN, ROLE_NAME.SELLER, ROLE_NAME.CLIENT]
+    if (baseRoles.includes(role.name)) {
+      throw ProhibitedActionOnBaseRoleException
+    }
+    await this.roleRepo.delete({
+      where: {
+        id: roleId,
+      },
+      isHard: true,
+    })
+    return {
+      message: 'Success.DeletedRole',
     }
   }
 }
