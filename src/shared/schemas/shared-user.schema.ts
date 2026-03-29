@@ -9,17 +9,14 @@ export const UserSchema = z
   .object({
     id: z.int().positive(),
     email: emailSchema,
-    password: z
-      .string('Mật khẩu là bắt buộc.')
-      .min(6, 'Mật khẩu phải có độ dài tối thiểu 6 ký tự.')
-      .max(32, 'Mật khẩu phải có độ dài tối đa 32 ký tự.'),
-    name: z.string().max(100, 'Tên chỉ có độ dài tối đa 100 ký tự.').nullable(),
+    password: z.string('Error.PasswordMustBeAString').min(6, 'Error.PasswordIsTooShort').max(32, 'PasswordIsTooLong'),
+    name: z.string('Error.UserNameMustBeAString').max(100, 'Error.UserNameIsTooLong').nullable(),
     phoneNumber: z
-      .string()
-      .max(11, 'Số điện thoại chỉ có độ dài tối đa 11 ký tự.')
-      .regex(PHONE_NUMBER_REGEX, 'Số điện thoại không hợp lệ.')
+      .string('Error.PhoneNumberMustBeAString')
+      .max(11, 'Error.PhoneNumberIsTooLong')
+      .regex(PHONE_NUMBER_REGEX, 'Error.PhoneNumberIsInvalid')
       .nullable(),
-    avatar: z.string().nullable(),
+    avatar: z.string('Error.AvatarMustBeAString').nullable(),
     totpSecret: z.string().nullable(),
     status: z.enum([UserStatus.ACTIVE, UserStatus.BLOCKED]),
     roleId: z.int().positive(),

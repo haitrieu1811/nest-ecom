@@ -16,8 +16,15 @@ export const ProfileSchema = UserSchema.pick({
 
 export const GetProfileResSchema = ProfileSchema
 
+export const UpdateProfileBodySchema = ProfileSchema.pick({
+  name: true,
+  phoneNumber: true,
+  avatar: true,
+}).strict()
+
 export const UpdateProfileResSchema = ProfileSchema
 
 export type ProfileType = z.infer<typeof ProfileSchema>
 export type GetProfileResType = z.infer<typeof GetProfileResSchema>
+export type UpdateProfileBodyType = z.infer<typeof UpdateProfileBodySchema>
 export type UpdateProfileResType = z.infer<typeof UpdateProfileResSchema>

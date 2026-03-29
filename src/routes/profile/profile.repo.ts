@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { GetProfileResType } from 'src/routes/profile/profile.schema'
-import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 
+import { ProfileType } from 'src/routes/profile/profile.schema'
+import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
+import { UserType } from 'src/shared/schemas/shared-user.schema'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 type ProfileWhereUniqueObject =
@@ -20,7 +21,7 @@ type ProfileWhereUniqueObject =
 export class ProfileRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  findUnique(where: ProfileWhereUniqueObject): Promise<GetProfileResType | null> {
+  findUnique(where: ProfileWhereUniqueObject): Promise<ProfileType | null> {
     return this.prisma.user.findUnique({
       where: {
         ...where,
@@ -50,6 +51,44 @@ export class ProfileRepo {
             },
           },
         },
+      },
+    }) as any
+  }
+
+  update({
+    where,
+    data,
+  }: {
+    where: ProfileWhereUniqueObject
+    data: Pick<UserType, 'name' | 'phoneNumber' | 'avatar'>
+  }): Promise<ProfileType> {
+    return this.prisma.user.update({
+      where: {
+        ...where,
+        deletedAt: null,
+      },
+      data,
+      include: {
+        role: {
+          include: {
+            permissions: {
+              select: {
+                path: true,
+                method: true,
+              },
+            },
+          },
+        },
+      },
+      omit: {
+        password: true,
+        totpSecret: true,
+        deletedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        roleId: true,
+        updatedById: true,
+        createdById: true,
       },
     }) as any
   }
