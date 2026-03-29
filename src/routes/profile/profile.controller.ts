@@ -1,9 +1,15 @@
-import { Body, Controller, Get, Put } from '@nestjs/common'
+import { Body, Controller, Get, Post, Put } from '@nestjs/common'
 import { ZodResponse } from 'nestjs-zod'
 
-import { GetProfileResDTO, UpdateProfileBodyDTO, UpdateProfileResDTO } from 'src/routes/profile/profile.dto'
+import {
+  ChangePasswordBodyDTO,
+  GetProfileResDTO,
+  UpdateProfileBodyDTO,
+  UpdateProfileResDTO,
+} from 'src/routes/profile/profile.dto'
 import { ProfileService } from 'src/routes/profile/profile.service'
 import ActiveUser from 'src/shared/decorators/active-user.decorator'
+import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
 @Controller('profile')
 export class ProfileController {
@@ -19,6 +25,15 @@ export class ProfileController {
   @ZodResponse({ type: UpdateProfileResDTO })
   updateProfile(@Body() body: UpdateProfileBodyDTO, @ActiveUser('userId') userId: number) {
     return this.profileService.updateProfile({
+      body,
+      userId,
+    })
+  }
+
+  @Post('change-password')
+  @ZodResponse({ type: MessageResDTO })
+  changePassword(@Body() body: ChangePasswordBodyDTO, @ActiveUser('userId') userId: number) {
+    return this.profileService.changePassword({
       body,
       userId,
     })

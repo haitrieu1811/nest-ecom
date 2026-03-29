@@ -15,7 +15,7 @@ import {
   UpdateRoleResType,
 } from 'src/routes/role/role.schema'
 import { ROLE_NAME } from 'src/shared/constants/role.constant'
-import { PermissionNotFoundException } from 'src/shared/errors/shared-permission.error'
+import { PermissionNotFoundException } from 'src/shared/error'
 import { isNotFoundPrismaErrror, isUniqueConstraintPrismaErrror } from 'src/shared/helpers'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'

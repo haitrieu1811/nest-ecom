@@ -60,7 +60,7 @@ export class ProfileRepo {
     data,
   }: {
     where: ProfileWhereUniqueObject
-    data: Pick<UserType, 'name' | 'phoneNumber' | 'avatar'>
+    data: Partial<Pick<UserType, 'name' | 'phoneNumber' | 'avatar' | 'password'>>
   }): Promise<ProfileType> {
     return this.prisma.user.update({
       where: {

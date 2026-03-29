@@ -3,13 +3,13 @@ import z from 'zod'
 import { PHONE_NUMBER_REGEX } from 'src/shared/constants/regex'
 import { UserStatus } from 'src/shared/constants/auth.constant'
 
-export const emailSchema = z.email('Email không hợp lệ.')
+export const emailSchema = z.email('Error.EmailIsInvalid')
 
 export const UserSchema = z
   .object({
     id: z.int().positive(),
     email: emailSchema,
-    password: z.string('Error.PasswordMustBeAString').min(6, 'Error.PasswordIsTooShort').max(32, 'PasswordIsTooLong'),
+    password: z.string('Error.PasswordMustBeAString').min(12, 'Error.PasswordIsTooShort').max(32, 'PasswordIsTooLong'),
     name: z.string('Error.UserNameMustBeAString').max(100, 'Error.UserNameIsTooLong').nullable(),
     phoneNumber: z
       .string('Error.PhoneNumberMustBeAString')

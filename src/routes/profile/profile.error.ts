@@ -8,3 +8,10 @@ export const PhoneNumberAlreadyExistException = new UnprocessableEntityException
     message: 'Error.PhoneNumberAlreadyExist',
   },
 ])
+
+export const OldPasswordIsIncorrectException = new UnprocessableEntityException([
+  {
+    path: 'oldPassword',
+    message: 'Error.OldPasswordIsIncorrect',
+  },
+])

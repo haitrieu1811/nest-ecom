@@ -9,7 +9,7 @@ import {
   UpdatePermissionBodyType,
   UpdatePermissionResType,
 } from 'src/routes/permission/permission.schema'
-import { PermissionNotFoundException } from 'src/shared/errors/shared-permission.error'
+import { PermissionNotFoundException } from 'src/shared/error'
 import { isNotFoundPrismaErrror, isUniqueConstraintPrismaErrror } from 'src/shared/helpers'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
