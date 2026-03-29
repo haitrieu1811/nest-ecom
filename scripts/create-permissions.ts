@@ -74,27 +74,51 @@ async function bootstrap() {
       deletedAt: null,
     },
   })
-  // Tìm role ADMIN
+  // Tìm role ADMIN, MANAGER
   const $adminRole = prisma.role.findUniqueOrThrow({
     where: {
       name: ROLE_NAME.ADMIN,
       deletedAt: null,
     },
   })
-  const [updatedPermissionsInDB, adminRole] = await Promise.all([$updatedPermissionsInDB, $adminRole])
-  // Thêm tất cả permission cho role ADMIN
-  await prisma.role.update({
+  const $managerRole = prisma.role.findUniqueOrThrow({
     where: {
-      id: adminRole.id,
+      name: ROLE_NAME.MANAGER,
       deletedAt: null,
     },
-    data: {
-      permissions: {
-        set: updatedPermissionsInDB.map((item) => ({ id: item.id })),
-      },
-    },
   })
+  const [updatedPermissionsInDB, adminRole, managerRole] = await Promise.all([
+    $updatedPermissionsInDB,
+    $adminRole,
+    $managerRole,
+  ])
+  // Thêm tất cả permission cho role ADMIN, MANAGER
+  await Promise.all([
+    prisma.role.update({
+      where: {
+        id: adminRole.id,
+        deletedAt: null,
+      },
+      data: {
+        permissions: {
+          set: updatedPermissionsInDB.map((item) => ({ id: item.id })),
+        },
+      },
+    }),
+    prisma.role.update({
+      where: {
+        id: managerRole.id,
+        deletedAt: null,
+      },
+      data: {
+        permissions: {
+          set: updatedPermissionsInDB.map((item) => ({ id: item.id })),
+        },
+      },
+    }),
+  ])
   console.log(`Đã thêm ${updatedPermissionsInDB.length} permissions cho role ${adminRole.name}`)
+  console.log(`Đã thêm ${updatedPermissionsInDB.length} permissions cho role ${managerRole.name}`)
 
   process.exit(1)
 }

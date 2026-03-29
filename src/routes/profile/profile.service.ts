@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
-import {
-  OldPasswordIsIncorrectException,
-  PhoneNumberAlreadyExistException,
-  ProfileNotFoundException,
-} from 'src/routes/profile/profile.error'
+import { OldPasswordIsIncorrectException, ProfileNotFoundException } from 'src/routes/profile/profile.error'
 import { ProfileRepo } from 'src/routes/profile/profile.repo'
 import {
   ChangePasswordBodyType,
@@ -12,6 +8,7 @@ import {
   UpdateProfileBodyType,
   UpdateProfileResType,
 } from 'src/routes/profile/profile.schema'
+import { PhoneNumberAlreadyExistException } from 'src/shared/error'
 import { isNotFoundPrismaErrror, isUniqueConstraintPrismaErrror } from 'src/shared/helpers'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
 import { MessageResType } from 'src/shared/schemas/response.schema'

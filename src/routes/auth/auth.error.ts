@@ -1,12 +1,5 @@
 import { BadRequestException, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common'
 
-export const EmailAlreadyExistException = new UnprocessableEntityException([
-  {
-    path: 'email',
-    message: 'Error.EmailAlreadyExist',
-  },
-])
-
 export const EmailNotFoundException = new UnprocessableEntityException([
   {
     path: 'email',

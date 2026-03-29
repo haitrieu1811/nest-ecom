@@ -5,7 +5,6 @@ import omit from 'lodash/omit'
 import ms from 'ms'
 
 import {
-  EmailAlreadyExistException,
   EmailNotFoundException,
   ExpiredOtpException,
   IncorrectPasswordException,
@@ -34,6 +33,7 @@ import {
 } from 'src/routes/auth/auth.schema'
 import envConfig from 'src/shared/config'
 import { TypeOfVerificationCode, VerificationCodeType } from 'src/shared/constants/auth.constant'
+import { EmailAlreadyExistException } from 'src/shared/error'
 import { generateOTP } from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'

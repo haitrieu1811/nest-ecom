@@ -13,3 +13,7 @@ export const isUniqueConstraintPrismaErrror = (err: unknown): err is Prisma.Pris
 export const isNotFoundPrismaErrror = (err: unknown): err is Prisma.PrismaClientKnownRequestError => {
   return err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025'
 }
+
+export const isForeignKeyConstraintPrismaErrror = (err: unknown): err is Prisma.PrismaClientKnownRequestError => {
+  return err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2003'
+}

@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
-import {
-  ProhibitedActionOnBaseRoleException,
-  RoleAlreadyExistException,
-  RoleNotFoundException,
-} from 'src/routes/role/role.error'
+import { ProhibitedActionOnBaseRoleException, RoleAlreadyExistException } from 'src/routes/role/role.error'
 import { RoleRepo } from 'src/routes/role/role.repo'
 import {
   CreateRoleBodyType,
@@ -15,17 +11,31 @@ import {
   UpdateRoleResType,
 } from 'src/routes/role/role.schema'
 import { ROLE_NAME } from 'src/shared/constants/role.constant'
-import { PermissionNotFoundException } from 'src/shared/error'
+import { PermissionNotFoundException, RoleNotFoundException } from 'src/shared/error'
 import { isNotFoundPrismaErrror, isUniqueConstraintPrismaErrror } from 'src/shared/helpers'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
+import { RoleIncludePermissionsType } from 'src/shared/schemas/shared-role.schema'
 
 @Injectable()
 export class RoleService {
   baseRoles: string[]
 
   constructor(private readonly roleRepo: RoleRepo) {
-    this.baseRoles = [ROLE_NAME.ADMIN, ROLE_NAME.SELLER, ROLE_NAME.CLIENT]
+    this.baseRoles = [ROLE_NAME.ADMIN, ROLE_NAME.SELLER, ROLE_NAME.CLIENT, ROLE_NAME.MANAGER]
+  }
+
+  private async handlePreventActionsOnBaseRoles(roleId: number): Promise<RoleIncludePermissionsType> {
+    const role = await this.roleRepo.findUnique({
+      id: roleId,
+    })
+    if (!role) {
+      throw RoleNotFoundException
+    }
+    if (this.baseRoles.includes(role.name)) {
+      throw ProhibitedActionOnBaseRoleException
+    }
+    return role
   }
 
   async createRole({ body, userId }: { body: CreateRoleBodyType; userId: number }): Promise<CreateRoleResType> {
@@ -53,16 +63,8 @@ export class RoleService {
     roleId: number
   }): Promise<UpdateRoleResType> {
     try {
-      const role = await this.roleRepo.findUnique({
-        id: roleId,
-      })
-      if (!role) {
-        throw RoleNotFoundException
-      }
       // Không cho phép bất cứ ai cập nhật base role (Admin, Seller, Client)
-      if (this.baseRoles.includes(role.name)) {
-        throw ProhibitedActionOnBaseRoleException
-      }
+      await this.handlePreventActionsOnBaseRoles(roleId)
       const updatedRole = await this.roleRepo.update({
         where: {
           id: roleId,
@@ -105,16 +107,8 @@ export class RoleService {
   }
 
   async deleteRole(roleId: number): Promise<MessageResType> {
-    const role = await this.roleRepo.findUnique({
-      id: roleId,
-    })
-    if (!role) {
-      throw RoleNotFoundException
-    }
     // Không cho phép bất cứ ai xóa 3 base role (Admin, Seller, Client)
-    if (this.baseRoles.includes(role.name)) {
-      throw ProhibitedActionOnBaseRoleException
-    }
+    await this.handlePreventActionsOnBaseRoles(roleId)
     await this.roleRepo.delete({
       where: {
         id: roleId,
