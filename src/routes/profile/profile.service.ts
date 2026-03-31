@@ -40,7 +40,7 @@ export class ProfileService {
     body: UpdateProfileBodyType
   }): Promise<UpdateProfileResType> {
     try {
-      const updatedUser = await this.profileRepo.update({
+      const updatedUser = await this.sharedUserRepo.update({
         where: {
           id: userId,
         },
@@ -70,7 +70,7 @@ export class ProfileService {
       throw OldPasswordIsIncorrectException
     }
     const hashedPassword = await this.hashingService.hash(body.password)
-    await this.profileRepo.update({
+    await this.sharedUserRepo.update({
       where: {
         id: userId,
       },

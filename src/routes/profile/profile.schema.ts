@@ -3,13 +3,9 @@ import z from 'zod'
 import { RoleIncludePermissions } from 'src/shared/schemas/shared-role.schema'
 import { UserSchema } from 'src/shared/schemas/shared-user.schema'
 
-export const ProfileSchema = UserSchema.pick({
-  id: true,
-  email: true,
-  name: true,
-  phoneNumber: true,
-  avatar: true,
-  status: true,
+export const ProfileSchema = UserSchema.omit({
+  password: true,
+  totpSecret: true,
 }).extend({
   role: RoleIncludePermissions,
 })

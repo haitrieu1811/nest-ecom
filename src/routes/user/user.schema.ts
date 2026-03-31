@@ -1,15 +1,7 @@
 import z from 'zod'
 
-import { UserSchema } from 'src/shared/schemas/shared-user.schema'
-import { RoleIncludePermissions } from 'src/shared/schemas/shared-role.schema'
 import { PaginationResSchema } from 'src/shared/schemas/response.schema'
-
-export const UserIncludeRolePermissionsSchema = UserSchema.omit({
-  password: true,
-  totpSecret: true,
-}).extend({
-  role: RoleIncludePermissions,
-})
+import { UserIncludeRolePermissionsSchema, UserSchema } from 'src/shared/schemas/shared-user.schema'
 
 export const CreateUserBodySchema = UserSchema.pick({
   email: true,
@@ -39,10 +31,16 @@ export const GetUsersResSchema = z.object({
 
 export const GetUserResSchema = UserIncludeRolePermissionsSchema
 
-export type UserIncludeRolePermissionsType = z.infer<typeof UserIncludeRolePermissionsSchema>
+export const UserIdParamSchema = z
+  .object({
+    userId: z.coerce.number().int('Error.UserIdMustBeAnInt').positive('Error.UserIdMustBePositive'),
+  })
+  .strict()
+
 export type CreateUserBodyType = z.infer<typeof CreateUserBodySchema>
 export type CreateUserResType = z.infer<typeof CreateUserResSchema>
 export type UpdateUserBodyType = z.infer<typeof UpdateUserBodySchema>
 export type UpdateUserResType = z.infer<typeof UpdateUserResSchema>
 export type GetUsersResType = z.infer<typeof GetUsersResSchema>
 export type GetUserResType = z.infer<typeof GetUserResSchema>
+export type UserIdParamType = z.infer<typeof UserIdParamSchema>

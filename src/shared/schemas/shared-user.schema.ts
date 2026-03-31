@@ -2,6 +2,7 @@ import z from 'zod'
 
 import { PHONE_NUMBER_REGEX } from 'src/shared/constants/regex'
 import { UserStatus } from 'src/shared/constants/auth.constant'
+import { RoleIncludePermissions } from 'src/shared/schemas/shared-role.schema'
 
 export const emailSchema = z.email('Error.EmailIsInvalid')
 
@@ -28,4 +29,12 @@ export const UserSchema = z
   })
   .strict()
 
+export const UserIncludeRolePermissionsSchema = UserSchema.omit({
+  password: true,
+  totpSecret: true,
+}).extend({
+  role: RoleIncludePermissions,
+})
+
 export type UserType = z.infer<typeof UserSchema>
+export type UserIncludeRolePermissionsType = z.infer<typeof UserIncludeRolePermissionsSchema>
