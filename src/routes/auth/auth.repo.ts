@@ -32,7 +32,7 @@ export class AuthRepo {
   }: {
     data: Omit<RegisterBodyType, 'confirmPassword' | 'code'>
     roleId: number
-  }): Promise<Omit<UserType, 'password' | 'totpSecret' | 'deletedAt' | 'createdById' | 'updatedById'>> {
+  }): Promise<Omit<UserType, 'password' | 'totpSecret'>> {
     const hashedPassword = await this.hashingService.hash(data.password)
     return this.prisma.user.create({
       data: {
@@ -43,9 +43,6 @@ export class AuthRepo {
       omit: {
         password: true,
         totpSecret: true,
-        deletedAt: true,
-        createdById: true,
-        updatedById: true,
       },
     }) as any
   }
@@ -141,26 +138,6 @@ export class AuthRepo {
   findUniqueVerificationCode(uniqueObject: VerificationCodeWhereUnique) {
     return this.prisma.verificationCode.findUnique({
       where: uniqueObject,
-    })
-  }
-
-  updateUser({
-    where,
-    data,
-  }: {
-    where: { id: number } | { email: string } | { phoneNumber: string }
-    data: Omit<Partial<UserType>, 'id' | 'createdAt' | 'updatedAt' | 'createdById' | 'updatedById' | 'roleId' | 'email'>
-  }) {
-    return this.prisma.user.update({
-      where,
-      data,
-      omit: {
-        password: true,
-        totpSecret: true,
-        deletedAt: true,
-        createdById: true,
-        updatedById: true,
-      },
     })
   }
 

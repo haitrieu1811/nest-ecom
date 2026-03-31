@@ -277,7 +277,7 @@ export class AuthService {
       userId: user.id,
     })
     // Tạo token và trả về thông tin user
-    const configuredUser = omit(user, ['password', 'totpSecret', 'deletedAt', 'createdById', 'updatedById'])
+    const configuredUser = omit(user, ['password', 'totpSecret'])
     const { accessToken, refreshToken } = await this.signTokens({
       userId: user.id,
       roleId: user.roleId,
@@ -372,7 +372,7 @@ export class AuthService {
     // Đặt lại mật khẩu và xóa OTP đã sử dụng
     const hashedPassword = await this.hashingService.hash(body.password)
     const [user] = await Promise.all([
-      this.authRepo.updateUser({
+      this.sharedUserRepo.update({
         where: {
           email: verificationCode.email,
         },
@@ -400,7 +400,7 @@ export class AuthService {
     })
     return {
       ...tokens,
-      user: user as any,
+      user,
     }
   }
 
@@ -419,7 +419,7 @@ export class AuthService {
     // Generate totp secret và uri
     const result = this.twoFactorAuthService.generateTOTPSecret(user.email)
     // Cập nhật totpSecret cho user trong DB
-    await this.authRepo.updateUser({
+    await this.sharedUserRepo.update({
       where: {
         id: user.id,
       },
@@ -461,7 +461,7 @@ export class AuthService {
       })
     }
     // Cập nhật totpSecret thành null cho user
-    await this.authRepo.updateUser({
+    await this.sharedUserRepo.update({
       where: {
         id: user.id,
       },
