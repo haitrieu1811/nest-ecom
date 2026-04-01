@@ -1,15 +1,18 @@
-import { Body, Controller, Delete, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { ZodResponse } from 'nestjs-zod'
 
 import {
   CreateUserBodyDTO,
   CreateUserResDTO,
+  GetUserResDTO,
+  GetUsersResDTO,
   UpdateUserBodyDTO,
   UpdateUserResDTO,
   UserIdParamDTO,
 } from 'src/routes/user/user.dto'
 import { UserService } from 'src/routes/user/user.service'
 import ActiveUser from 'src/shared/decorators/active-user.decorator'
+import { PaginationQueryDTO } from 'src/shared/dtos/request.dto'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
 @Controller('users')
@@ -47,5 +50,17 @@ export class UserController {
       deletedById: userId,
       deletedByRoleId: roleId,
     })
+  }
+
+  @Get()
+  @ZodResponse({ type: GetUsersResDTO })
+  getUsers(@Query() query: PaginationQueryDTO) {
+    return this.userService.getUsers(query)
+  }
+
+  @Get(':userId')
+  @ZodResponse({ type: GetUserResDTO })
+  getUser(@Param() param: UserIdParamDTO) {
+    return this.userService.getUser(param.userId)
   }
 }

@@ -6,7 +6,13 @@ import {
   UserNotFoundException,
 } from 'src/routes/user/user.error'
 import { UserRepo } from 'src/routes/user/user.repo'
-import { CreateUserBodyType, CreateUserResType, UpdateUserBodyType } from 'src/routes/user/user.schema'
+import {
+  CreateUserBodyType,
+  CreateUserResType,
+  GetUserResType,
+  GetUsersResType,
+  UpdateUserBodyType,
+} from 'src/routes/user/user.schema'
 import {
   EmailAlreadyExistException,
   OnlyAdminActionException,
@@ -16,6 +22,7 @@ import {
 import { isForeignKeyConstraintPrismaErrror, isNotFoundPrismaErrror } from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
+import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
 import { HashingService } from 'src/shared/services/hashing.service'
 
@@ -151,5 +158,28 @@ export class UserService {
       }
       throw error
     }
+  }
+
+  async getUsers(query: PaginationQueryType): Promise<GetUsersResType> {
+    const { users, totalUsers } = await this.userRepo.findMany(query)
+    return {
+      data: users,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        totalRows: totalUsers,
+        totalPages: Math.ceil(totalUsers / query.limit),
+      },
+    }
+  }
+
+  async getUser(userId: number): Promise<GetUserResType> {
+    const user = await this.userRepo.findUnique({
+      id: userId,
+    })
+    if (!user) {
+      throw UserNotFoundException
+    }
+    return user
   }
 }
