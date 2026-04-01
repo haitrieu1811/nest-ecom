@@ -4,7 +4,7 @@ import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { UserIncludeRolePermissionsType, UserType } from 'src/shared/schemas/shared-user.schema'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
-type UserWhereUniqueObject = { email: string } | { id: number } | { phoneNumber: string }
+export type UserWhereUniqueObject = { email: string } | { id: number } | { phoneNumber: string }
 
 @Injectable()
 @SerializeAll()

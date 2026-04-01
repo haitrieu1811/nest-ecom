@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common'
 
-import { CannotUpdateYourSelfException, UserNotFoundException } from 'src/routes/user/user.error'
+import {
+  CannotDeleteYourSelfException,
+  CannotUpdateYourSelfException,
+  UserNotFoundException,
+} from 'src/routes/user/user.error'
 import { UserRepo } from 'src/routes/user/user.repo'
 import { CreateUserBodyType, CreateUserResType, UpdateUserBodyType } from 'src/routes/user/user.schema'
 import {
@@ -12,6 +16,7 @@ import {
 import { isForeignKeyConstraintPrismaErrror, isNotFoundPrismaErrror } from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
+import { MessageResType } from 'src/shared/schemas/response.schema'
 import { HashingService } from 'src/shared/services/hashing.service'
 
 @Injectable()
@@ -102,6 +107,47 @@ export class UserService {
       }
       if (isForeignKeyConstraintPrismaErrror(error)) {
         throw RoleNotFoundException
+      }
+      throw error
+    }
+  }
+
+  async deleteUser({
+    userId,
+    deletedById,
+    deletedByRoleId,
+  }: {
+    userId: number
+    deletedById: number
+    deletedByRoleId: number
+  }): Promise<MessageResType> {
+    try {
+      // Không được tự xóa chính mình
+      if (userId === deletedById) {
+        throw CannotDeleteYourSelfException
+      }
+      const [adminRoleId, user] = await Promise.all([
+        this.sharedRoleRepo.getAdminRoleId(),
+        this.sharedUserRepo.findUnique({
+          id: userId,
+        }),
+      ])
+      // Chỉ có ADMIN mới có quyền xóa user có role ADMIN
+      if (user?.roleId === adminRoleId && deletedByRoleId !== adminRoleId) {
+        throw OnlyAdminActionException
+      }
+      await this.userRepo.delete({
+        where: {
+          id: userId,
+        },
+        isHard: true,
+      })
+      return {
+        message: 'Success.DeletedUser',
+      }
+    } catch (error) {
+      if (isNotFoundPrismaErrror(error)) {
+        throw UserNotFoundException
       }
       throw error
     }

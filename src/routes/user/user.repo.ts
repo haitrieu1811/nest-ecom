@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 
 import { CreateUserBodyType } from 'src/routes/user/user.schema'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
+import { UserWhereUniqueObject } from 'src/shared/repositories/shared-user.repo'
 import { UserType } from 'src/shared/schemas/shared-user.schema'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -33,5 +34,21 @@ export class UserRepo {
         totpSecret: true,
       },
     }) as any
+  }
+
+  delete({ where, isHard }: { where: UserWhereUniqueObject; isHard?: boolean }) {
+    return !isHard
+      ? this.prisma.user.update({
+          where: {
+            ...where,
+            deletedAt: null,
+          },
+          data: {
+            deletedAt: new Date(),
+          },
+        })
+      : this.prisma.user.delete({
+          where,
+        })
   }
 }
