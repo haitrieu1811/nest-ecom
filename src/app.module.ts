@@ -6,6 +6,7 @@ import { AppController } from 'src/app.controller'
 import { AppService } from 'src/app.service'
 import { AuthModule } from 'src/routes/auth/auth.module'
 import { LanguageModule } from 'src/routes/language/language.module'
+import { MediaModule } from 'src/routes/media/media.module'
 import { PermissionModule } from 'src/routes/permission/permission.module'
 import { ProfileModule } from 'src/routes/profile/profile.module'
 import { RoleModule } from 'src/routes/role/role.module'
@@ -16,7 +17,16 @@ import CustomZodValidationPipe from 'src/shared/pipes/custom-zod-validation.pipe
 import { SharedModule } from 'src/shared/shared.module'
 
 @Module({
-  imports: [SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule, ProfileModule, UserModule],
+  imports: [
+    SharedModule,
+    AuthModule,
+    LanguageModule,
+    PermissionModule,
+    RoleModule,
+    ProfileModule,
+    UserModule,
+    MediaModule,
+  ],
   controllers: [AppController],
   providers: [
     {

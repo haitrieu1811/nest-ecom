@@ -37,6 +37,8 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string(),
   GOOGLE_REDIRECT_URI: z.string(),
   GOOGLE_CLIENT_REDIRECT_URI: z.string(),
+
+  PREFIX_STATIC_ENDPOINT: z.string(),
 })
 
 const envSafeParse = envSchema.safeParse(process.env)
