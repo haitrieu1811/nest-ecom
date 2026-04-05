@@ -23,16 +23,23 @@ export class SharedUserRepo {
   update({
     where,
     data,
+    updatedById,
   }: {
     where: UserWhereUniqueObject
-    data: Partial<Pick<UserType, 'name' | 'phoneNumber' | 'avatar' | 'password' | 'roleId' | 'status' | 'totpSecret'>>
+    data: Partial<
+      Pick<UserType, 'email' | 'name' | 'phoneNumber' | 'avatar' | 'password' | 'roleId' | 'status' | 'totpSecret'>
+    >
+    updatedById?: number
   }): Promise<UserIncludeRolePermissionsType> {
     return this.prisma.user.update({
       where: {
         ...where,
         deletedAt: null,
       },
-      data,
+      data: {
+        ...data,
+        updatedById,
+      },
       include: {
         role: {
           include: {

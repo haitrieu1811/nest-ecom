@@ -9,7 +9,7 @@ import {
   GetLanguagesResType,
   UpdateLanguageBodyType,
 } from 'src/routes/language/language.schema'
-import { isNotFoundPrismaErrror, isUniqueConstraintPrismaErrror } from 'src/shared/helpers'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
 import { MessageResType } from 'src/shared/schemas/response.schema'
 
 @Injectable()
@@ -27,7 +27,7 @@ export class LanguageService {
       const result = await this.languageRepo.create({ data: body, userId })
       return result
     } catch (error) {
-      if (isUniqueConstraintPrismaErrror(error)) {
+      if (isUniqueConstraintPrismaError(error)) {
         throw LanguageAlreadyExistException
       }
       throw error
@@ -73,9 +73,9 @@ export class LanguageService {
       })
       return result
     } catch (error) {
-      if (isNotFoundPrismaErrror(error)) {
+      if (isNotFoundPrismaError(error)) {
         throw LanguageNotFoundException
-      } else if (isUniqueConstraintPrismaErrror(error)) {
+      } else if (isUniqueConstraintPrismaError(error)) {
         throw LanguageAlreadyExistException
       }
       throw error
@@ -95,7 +95,7 @@ export class LanguageService {
         message: 'Success.DeleteLanguage',
       }
     } catch (error) {
-      if (isNotFoundPrismaErrror(error)) {
+      if (isNotFoundPrismaError(error)) {
         throw LanguageNotFoundException
       }
       throw error

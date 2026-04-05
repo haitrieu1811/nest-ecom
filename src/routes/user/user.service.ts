@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
-import {
-  CannotDeleteYourSelfException,
-  CannotUpdateYourSelfException,
-  UserNotFoundException,
-} from 'src/routes/user/user.error'
+import { CannotUpdateOrDeleteYourselfException, UserNotFoundException } from 'src/routes/user/user.error'
 import { UserRepo } from 'src/routes/user/user.repo'
 import {
   CreateUserBodyType,
@@ -13,13 +9,20 @@ import {
   GetUsersResType,
   UpdateUserBodyType,
 } from 'src/routes/user/user.schema'
+import { ROLE_NAME, RoleNameType } from 'src/shared/constants/role.constant'
+import { UNIQUE_FIELDS_IN_DB } from 'src/shared/constants/utils.constant'
 import {
   EmailAlreadyExistException,
   OnlyAdminActionException,
   PhoneNumberAlreadyExistException,
   RoleNotFoundException,
 } from 'src/shared/error'
-import { isForeignKeyConstraintPrismaErrror, isNotFoundPrismaErrror } from 'src/shared/helpers'
+import {
+  extractUniqueConstraintPrismaErrorField,
+  isForeignKeyConstraintPrismaError,
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError,
+} from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
@@ -35,24 +38,64 @@ export class UserService {
     private readonly hashingService: HashingService,
   ) {}
 
+  /**
+   * Function này kiểm tra xem người thực hiện có quyền tác động đến người khác không.
+   * Vì chỉ có người thực hiện là admin role mới có quyền sau: Tạo admin user, update roleId thành admin, xóa admin user.
+   * Còn nếu không phải admin thì không được phép tác động đến admin
+   */
+  private async verifyRole({
+    roleNameAgent,
+    roleIdTarget,
+  }: {
+    roleNameAgent: RoleNameType
+    roleIdTarget: number
+  }): Promise<boolean> {
+    if (roleNameAgent === ROLE_NAME.ADMIN) {
+      return true
+    }
+    // User thao tác không phải admin thì roleIdTarget phải khác admin
+    const adminRoleId = await this.sharedRoleRepo.getAdminRoleId()
+    if (roleIdTarget === adminRoleId) {
+      throw OnlyAdminActionException
+    }
+    return true
+  }
+
+  /**
+   * Function này kiểm tra userTargetId có phải là bạn không.
+   * Bạn không thể tự thao tác với tài khoản của mình (update, delete)
+   */
+  private verifyYourself({ userAgentId, userTargetId }: { userAgentId: number; userTargetId: number }): boolean {
+    if (userTargetId === userAgentId) {
+      throw CannotUpdateOrDeleteYourselfException
+    }
+    return true
+  }
+
+  private async getRoleIdByUserId(userId: number): Promise<number> {
+    const user = await this.sharedUserRepo.findUnique({
+      id: userId,
+    })
+    if (!user) {
+      throw UserNotFoundException
+    }
+    return user.roleId
+  }
+
   async createUser({
     body,
     createdById,
+    roleNameAgent,
   }: {
     body: CreateUserBodyType
     createdById: number
+    roleNameAgent: RoleNameType
   }): Promise<CreateUserResType> {
     try {
       // Kiểm tra email, số điện thoại đã tồn tại chưa
-      const [userByEmail, creator, adminRoleId] = await Promise.all([
-        this.sharedUserRepo.findUnique({
-          email: body.email,
-        }),
-        this.sharedUserRepo.findUnique({
-          id: createdById,
-        }),
-        this.sharedRoleRepo.getAdminRoleId(),
-      ])
+      const userByEmail = await this.sharedUserRepo.findUnique({
+        email: body.email,
+      })
       if (userByEmail) {
         throw EmailAlreadyExistException
       }
@@ -65,37 +108,36 @@ export class UserService {
         }
       }
       // Chỉ có ADMIN mới tạo user có role ADMIN
-      if (body.roleId === adminRoleId && creator?.roleId !== adminRoleId) {
-        throw OnlyAdminActionException
-      }
+      await this.verifyRole({ roleNameAgent, roleIdTarget: body.roleId })
       const user = await this.userRepo.create({ data: body, createdById })
       return user
     } catch (error) {
-      if (isForeignKeyConstraintPrismaErrror(error)) {
+      if (isForeignKeyConstraintPrismaError(error)) {
         throw RoleNotFoundException
       }
       throw error
     }
   }
 
-  async updateUser({ body, updatedById, userId }: { body: UpdateUserBodyType; userId: number; updatedById: number }) {
-    // Bạn không thể cập nhật chính mình
-    if (userId === updatedById) {
-      throw CannotUpdateYourSelfException
-    }
-    const [adminRoleId, user, updater] = await Promise.all([
-      this.sharedRoleRepo.getAdminRoleId(),
-      this.sharedUserRepo.findUnique({
-        id: userId,
-      }),
-      this.sharedUserRepo.findUnique({
-        id: updatedById,
-      }),
-    ])
+  async updateUser({
+    body,
+    updatedById,
+    userId,
+    roleNameAgent,
+  }: {
+    body: UpdateUserBodyType
+    userId: number
+    updatedById: number
+    roleNameAgent: RoleNameType
+  }) {
+    // Bạn không thể update chính mình
+    this.verifyYourself({ userAgentId: updatedById, userTargetId: userId })
     // Chỉ có ADMIN mới được cập nhật user với role là ADMIN, hoặc lên cấp role thành ADMIN
-    if ((user?.roleId === adminRoleId || body.roleId === adminRoleId) && updater?.roleId !== adminRoleId) {
-      throw OnlyAdminActionException
-    }
+    const roleIdTarget = await this.getRoleIdByUserId(userId)
+    await Promise.all([
+      this.verifyRole({ roleNameAgent, roleIdTarget }),
+      this.verifyRole({ roleNameAgent, roleIdTarget: body.roleId }),
+    ])
     try {
       const hashedPassword = await this.hashingService.hash(body.password)
       const result = await this.sharedUserRepo.update({
@@ -106,14 +148,23 @@ export class UserService {
           ...body,
           password: hashedPassword,
         },
+        updatedById,
       })
       return result
     } catch (error) {
-      if (isNotFoundPrismaErrror(error)) {
+      if (isNotFoundPrismaError(error)) {
         throw UserNotFoundException
       }
-      if (isForeignKeyConstraintPrismaErrror(error)) {
+      if (isForeignKeyConstraintPrismaError(error)) {
         throw RoleNotFoundException
+      }
+      if (isUniqueConstraintPrismaError(error)) {
+        const field = extractUniqueConstraintPrismaErrorField(error)
+        if (field === UNIQUE_FIELDS_IN_DB.USER.EMAIL) {
+          throw EmailAlreadyExistException
+        } else if (field === UNIQUE_FIELDS_IN_DB.USER.PHONE_NUMBER) {
+          throw PhoneNumberAlreadyExistException
+        }
       }
       throw error
     }
@@ -122,27 +173,18 @@ export class UserService {
   async deleteUser({
     userId,
     deletedById,
-    deletedByRoleId,
+    roleNameAgent,
   }: {
     userId: number
     deletedById: number
-    deletedByRoleId: number
+    roleNameAgent: RoleNameType
   }): Promise<MessageResType> {
     try {
       // Không được tự xóa chính mình
-      if (userId === deletedById) {
-        throw CannotDeleteYourSelfException
-      }
-      const [adminRoleId, user] = await Promise.all([
-        this.sharedRoleRepo.getAdminRoleId(),
-        this.sharedUserRepo.findUnique({
-          id: userId,
-        }),
-      ])
+      this.verifyYourself({ userAgentId: deletedById, userTargetId: userId })
       // Chỉ có ADMIN mới có quyền xóa user có role ADMIN
-      if (user?.roleId === adminRoleId && deletedByRoleId !== adminRoleId) {
-        throw OnlyAdminActionException
-      }
+      const roleIdTarget = await this.getRoleIdByUserId(userId)
+      await this.verifyRole({ roleNameAgent, roleIdTarget })
       await this.userRepo.delete({
         where: {
           id: userId,
@@ -153,7 +195,7 @@ export class UserService {
         message: 'Success.DeletedUser',
       }
     } catch (error) {
-      if (isNotFoundPrismaErrror(error)) {
+      if (isNotFoundPrismaError(error)) {
         throw UserNotFoundException
       }
       throw error
@@ -174,7 +216,7 @@ export class UserService {
   }
 
   async getUser(userId: number): Promise<GetUserResType> {
-    const user = await this.userRepo.findUnique({
+    const user = await this.userRepo.findUniqueIncludeRolePermissions({
       id: userId,
     })
     if (!user) {

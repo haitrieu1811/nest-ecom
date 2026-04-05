@@ -89,7 +89,7 @@ export class UserRepo {
     }
   }
 
-  findUnique(where: UserWhereUniqueObject): Promise<UserIncludeRolePermissionsType | null> {
+  findUniqueIncludeRolePermissions(where: UserWhereUniqueObject): Promise<UserIncludeRolePermissionsType | null> {
     return this.prisma.user.findUnique({
       where,
       include: {

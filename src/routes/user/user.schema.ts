@@ -18,9 +18,7 @@ export const CreateUserResSchema = UserSchema.omit({
   totpSecret: true,
 })
 
-export const UpdateUserBodySchema = CreateUserBodySchema.omit({
-  email: true,
-})
+export const UpdateUserBodySchema = CreateUserBodySchema
 
 export const UpdateUserResSchema = UserIncludeRolePermissionsSchema
 

@@ -4,4 +4,6 @@ export const CannotUpdateYourSelfException = new BadRequestException('Error.Cann
 
 export const CannotDeleteYourSelfException = new BadRequestException('Error.CannotDeleteYourSelf')
 
+export const CannotUpdateOrDeleteYourselfException = new BadRequestException('Error.CannotUpdateOrDeleteYourself')
+
 export const UserNotFoundException = new NotFoundException('Error.UserNotFound')

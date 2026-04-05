@@ -4,3 +4,5 @@ export const ROLE_NAME = {
   SELLER: 'SELLER',
   CLIENT: 'CLIENT',
 } as const
+
+export type RoleNameType = keyof typeof ROLE_NAME

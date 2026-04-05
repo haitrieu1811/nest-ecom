@@ -12,7 +12,7 @@ import {
 } from 'src/routes/role/role.schema'
 import { ROLE_NAME } from 'src/shared/constants/role.constant'
 import { PermissionNotFoundException, RoleNotFoundException } from 'src/shared/error'
-import { isNotFoundPrismaErrror, isUniqueConstraintPrismaErrror } from 'src/shared/helpers'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
 import { RoleIncludePermissionsType } from 'src/shared/schemas/shared-role.schema'
@@ -46,7 +46,7 @@ export class RoleService {
       })
       return result
     } catch (error) {
-      if (isUniqueConstraintPrismaErrror(error)) {
+      if (isUniqueConstraintPrismaError(error)) {
         throw RoleAlreadyExistException
       }
       throw error
@@ -74,10 +74,10 @@ export class RoleService {
       })
       return updatedRole
     } catch (error) {
-      if (isUniqueConstraintPrismaErrror(error)) {
+      if (isUniqueConstraintPrismaError(error)) {
         throw RoleAlreadyExistException
       }
-      if (isNotFoundPrismaErrror(error)) {
+      if (isNotFoundPrismaError(error)) {
         throw PermissionNotFoundException
       }
       throw error

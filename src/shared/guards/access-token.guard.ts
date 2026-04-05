@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Unauthor
 import { JsonWebTokenError } from '@nestjs/jwt'
 import capitalize from 'lodash/capitalize'
 
-import { RequestDecodedAccessToken } from 'src/shared/constants/auth.constant'
+import { RequestDecodedAccessToken, RequestRole } from 'src/shared/constants/auth.constant'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { TokenService } from 'src/shared/services/token.service'
 import { AccessTokenPayload } from 'src/shared/types/utils.type'
@@ -59,6 +59,10 @@ export class AccessTokenGuard implements CanActivate {
             path,
             method,
           },
+          select: {
+            path: true,
+            method: true,
+          },
         },
       },
     })
@@ -66,6 +70,7 @@ export class AccessTokenGuard implements CanActivate {
     if (!canAccess) {
       throw new ForbiddenException('Error.YouCannotAccessThisResource')
     }
+    request[RequestRole] = role
     return true
   }
 }

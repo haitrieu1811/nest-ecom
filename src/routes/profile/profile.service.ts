@@ -9,7 +9,7 @@ import {
   UpdateProfileResType,
 } from 'src/routes/profile/profile.schema'
 import { PhoneNumberAlreadyExistException } from 'src/shared/error'
-import { isNotFoundPrismaErrror, isUniqueConstraintPrismaErrror } from 'src/shared/helpers'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
 import { MessageResType } from 'src/shared/schemas/response.schema'
 import { HashingService } from 'src/shared/services/hashing.service'
@@ -48,10 +48,10 @@ export class ProfileService {
       })
       return updatedUser
     } catch (error) {
-      if (isNotFoundPrismaErrror(error)) {
+      if (isNotFoundPrismaError(error)) {
         throw ProfileNotFoundException
       }
-      if (isUniqueConstraintPrismaErrror(error)) {
+      if (isUniqueConstraintPrismaError(error)) {
         throw PhoneNumberAlreadyExistException
       }
       throw error

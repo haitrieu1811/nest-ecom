@@ -10,7 +10,7 @@ import {
   UpdatePermissionResType,
 } from 'src/routes/permission/permission.schema'
 import { PermissionNotFoundException } from 'src/shared/error'
-import { isNotFoundPrismaErrror, isUniqueConstraintPrismaErrror } from 'src/shared/helpers'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
 
@@ -23,7 +23,7 @@ export class PermissionService {
       const result = await this.permissionRepo.create({ data: body, userId })
       return result
     } catch (error) {
-      if (isUniqueConstraintPrismaErrror(error)) {
+      if (isUniqueConstraintPrismaError(error)) {
         throw PermissionAlreadyExistException
       }
       throw error
@@ -74,10 +74,10 @@ export class PermissionService {
       })
       return result
     } catch (error) {
-      if (isNotFoundPrismaErrror(error)) {
+      if (isNotFoundPrismaError(error)) {
         throw PermissionNotFoundException
       }
-      if (isUniqueConstraintPrismaErrror(error)) {
+      if (isUniqueConstraintPrismaError(error)) {
         throw PermissionAlreadyExistException
       }
       throw error
@@ -96,7 +96,7 @@ export class PermissionService {
         message: 'Success.DeletePermission',
       }
     } catch (error) {
-      if (isNotFoundPrismaErrror(error)) {
+      if (isNotFoundPrismaError(error)) {
         throw PermissionNotFoundException
       }
       throw error

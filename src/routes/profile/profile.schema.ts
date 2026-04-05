@@ -1,24 +1,16 @@
 import z from 'zod'
 
-import { RoleIncludePermissions } from 'src/shared/schemas/shared-role.schema'
-import { UserSchema } from 'src/shared/schemas/shared-user.schema'
+import { UserIncludeRolePermissionsSchema, UserSchema } from 'src/shared/schemas/shared-user.schema'
 
-export const ProfileSchema = UserSchema.omit({
-  password: true,
-  totpSecret: true,
-}).extend({
-  role: RoleIncludePermissions,
-})
+export const GetProfileResSchema = UserIncludeRolePermissionsSchema
 
-export const GetProfileResSchema = ProfileSchema
-
-export const UpdateProfileBodySchema = ProfileSchema.pick({
+export const UpdateProfileBodySchema = UserSchema.pick({
   name: true,
   phoneNumber: true,
   avatar: true,
 }).strict()
 
-export const UpdateProfileResSchema = ProfileSchema
+export const UpdateProfileResSchema = UserIncludeRolePermissionsSchema
 
 export const ChangePasswordBodySchema = UserSchema.pick({
   password: true,
@@ -37,7 +29,7 @@ export const ChangePasswordBodySchema = UserSchema.pick({
     }
   })
 
-export type ProfileType = z.infer<typeof ProfileSchema>
+export type ProfileType = z.infer<typeof UserIncludeRolePermissionsSchema>
 export type GetProfileResType = z.infer<typeof GetProfileResSchema>
 export type UpdateProfileBodyType = z.infer<typeof UpdateProfileBodySchema>
 export type UpdateProfileResType = z.infer<typeof UpdateProfileResSchema>

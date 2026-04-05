@@ -14,6 +14,8 @@ export type TypeOfVerificationCode = keyof typeof VerificationCodeType
 
 export const RequestDecodedAccessToken = 'accessToken'
 
+export const RequestRole = 'role'
+
 export const AuthorizationTypes = {
   BEARER: 'BEARER',
   API_KEY: 'API_KEY',
