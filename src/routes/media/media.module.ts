@@ -4,6 +4,7 @@ import { existsSync, mkdirSync } from 'fs'
 import multer from 'multer'
 
 import { MediaController } from 'src/routes/media/media.controller'
+import { MediaService } from 'src/routes/media/media.service'
 import { UPLOAD_DIR } from 'src/shared/constants/utils.constant'
 import { generateFilename } from 'src/shared/helpers'
 
@@ -23,6 +24,7 @@ const storage = multer.diskStorage({
     }),
   ],
   controllers: [MediaController],
+  providers: [MediaService],
 })
 export class MediaModule {
   constructor() {

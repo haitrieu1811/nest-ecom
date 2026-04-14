@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   FileTypeValidator,
   Get,
@@ -11,20 +12,22 @@ import {
 } from '@nestjs/common'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import type { Response } from 'express'
-import { unlink } from 'fs/promises'
+import { ZodResponse } from 'nestjs-zod'
 import path from 'path'
-import { ParseFileWithUnlinkPipe } from 'src/routes/media/parse-file-with-unlink.pipe'
 
+import { GetPresignedUrlBodyDTO, GetPresignedUrlResDTO, UploadImagesResDTO } from 'src/routes/media/media.dto'
+import { MediaService } from 'src/routes/media/media.service'
+import { ParseFileWithUnlinkPipe } from 'src/routes/media/parse-file-with-unlink.pipe'
 import { UPLOAD_DIR } from 'src/shared/constants/utils.constant'
 import { IsPublic } from 'src/shared/decorators/auth.decorator'
-import { S3Service } from 'src/shared/services/s3.service'
 
 @Controller('media')
 export class MediaController {
-  constructor(private readonly s3Service: S3Service) {}
+  constructor(private readonly mediaService: MediaService) {}
 
   @Post('images/upload')
   @UseInterceptors(FilesInterceptor('files', 100))
+  @ZodResponse({ type: UploadImagesResDTO })
   async uploadFile(
     @UploadedFiles(
       new ParseFileWithUnlinkPipe({
@@ -40,26 +43,18 @@ export class MediaController {
     )
     files: Array<Express.Multer.File>,
   ) {
-    const result = await Promise.all(
-      files.map(async (file) => {
-        const s3Response = await this.s3Service.upload({
-          filename: `images/${file.filename}`,
-          filepath: file.path,
-          contentType: file.mimetype,
-        })
-        return {
-          url: s3Response.Location,
-        }
-      }),
-    )
-    // Xóa ảnh ở local khi upload lên S3 thành công
-    await Promise.all(files.map((file) => unlink(file.path)))
-    return result
+    return this.mediaService.uploadImages(files)
   }
 
   @Get('static/:filename')
   @IsPublic()
   serveStaticFile(@Param('filename') filename: string, @Res() res: Response) {
     return res.sendFile(path.resolve(UPLOAD_DIR, filename))
+  }
+
+  @Post('images/upload/presigned-url')
+  @ZodResponse({ type: GetPresignedUrlResDTO })
+  getPresignedUrl(@Body() body: GetPresignedUrlBodyDTO) {
+    return this.mediaService.getPresignedUrl(body)
   }
 }
