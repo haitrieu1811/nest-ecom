@@ -28,7 +28,7 @@ export const UpdateLanguageResSchema = LanguageSchema
 
 export const GetLanguagesResSchema = z.object({
   data: z.array(LanguageSchema),
-  totalItems: z.number().positive(),
+  totalItems: z.number(),
 })
 
 export const GetLanguageResSchema = LanguageSchema

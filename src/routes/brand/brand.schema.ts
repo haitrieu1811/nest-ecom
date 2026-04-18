@@ -6,7 +6,6 @@ import { BrandSchema } from 'src/shared/schemas/shared-brand.schema'
 export const CreateBrandBodySchema = BrandSchema.pick({
   logo: true,
   name: true,
-  description: true,
 }).strict()
 
 export const CreateBrandResSchema = BrandSchema
