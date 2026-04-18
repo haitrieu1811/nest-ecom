@@ -177,7 +177,7 @@ model Brand {
   id          Int       @id @default(autoincrement())
   logo        String?
   name        String    @db.VarChar(100)
-  description String    @db.VarChar(500)
+  description String    @default("") @db.VarChar(500)
   deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
