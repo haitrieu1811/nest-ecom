@@ -8,3 +8,5 @@ export const UNIQUE_FIELDS_IN_DB = {
 } as const
 
 export const UPLOAD_DIR = path.resolve('upload')
+
+export const ALL_LANGUAGES_CODE = 'all'

@@ -7,6 +7,7 @@ import {
   GetCategoriesQueryType,
   UpdateCategoryBodyType,
 } from 'src/routes/category/category.schema'
+import { ALL_LANGUAGES_CODE } from 'src/shared/constants/utils.constant'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
@@ -28,7 +29,7 @@ export class CategoryRepo {
     }) as any
   }
 
-  async findMany({ page, limit, parentId }: GetCategoriesQueryType): Promise<{
+  async findMany({ page, limit, parentId, languageId }: GetCategoriesQueryType & { languageId: string }): Promise<{
     categories: CategoryIncludeTranslationsType[]
     totalCategories: number
   }> {
@@ -43,7 +44,15 @@ export class CategoryRepo {
         take: limit,
         include: {
           categoryTranslations: {
-            where: { deletedAt: null },
+            where:
+              languageId === ALL_LANGUAGES_CODE
+                ? {
+                    deletedAt: null,
+                  }
+                : {
+                    deletedAt: null,
+                    languageId,
+                  },
           },
         },
       }) as any,

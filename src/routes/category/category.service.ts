@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import { I18nContext, I18nService } from 'nestjs-i18n'
 
+import { I18nTranslations } from 'generated/i18n.generated'
 import { CannotUpdateSubCategoryException, CategoryNotFoundException } from 'src/routes/category/category.error'
 import { CategoryRepo } from 'src/routes/category/category.repo'
 import {
@@ -16,7 +18,10 @@ import { MessageResType } from 'src/shared/schemas/response.schema'
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly categoryRepo: CategoryRepo) {}
+  constructor(
+    private readonly categoryRepo: CategoryRepo,
+    private readonly i18n: I18nService<I18nTranslations>,
+  ) {}
 
   async createCategory({
     body,
@@ -49,7 +54,10 @@ export class CategoryService {
         }
       }
     }
-    const { categories, totalCategories } = await this.categoryRepo.findMany(query)
+    const { categories, totalCategories } = await this.categoryRepo.findMany({
+      ...query,
+      languageId: I18nContext.current()?.lang as string,
+    })
     return {
       data: categories,
       totalItems: totalCategories,
