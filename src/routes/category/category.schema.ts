@@ -1,3 +1,4 @@
+import { CategoryTranslationSchema } from 'src/routes/category/category-translation/category-translation.schema'
 import { PaginationQuerySchema } from 'src/shared/schemas/request.shema'
 import z from 'zod'
 
@@ -21,6 +22,10 @@ export const CategorySchema = z
     updatedById: z.int().positive().nullable(),
   })
   .strict()
+
+export const CategoryIncludeTranslationsSchema = CategorySchema.extend({
+  categoryTranslations: z.array(CategoryTranslationSchema),
+})
 
 export const CreateCategoryBodySchema = CategorySchema.pick({
   name: true,
@@ -55,13 +60,14 @@ export const GetCategoriesQuerySchema = PaginationQuerySchema.extend({
 })
 
 export const GetCategoriesResSchema = z.object({
-  data: z.array(CategorySchema),
+  data: z.array(CategoryIncludeTranslationsSchema),
   totalItems: z.number(),
 })
 
-export const GetCategoryResSchema = CategorySchema
+export const GetCategoryResSchema = CategoryIncludeTranslationsSchema
 
 export type CategoryType = z.infer<typeof CategorySchema>
+export type CategoryIncludeTranslationsType = z.infer<typeof CategoryIncludeTranslationsSchema>
 export type CreateCategoryBodyType = z.infer<typeof CreateCategoryBodySchema>
 export type CreateCategoryResType = z.infer<typeof CreateCategoryResSchema>
 export type UpdateCategoryBodyType = z.infer<typeof UpdateCategoryBodySchema>

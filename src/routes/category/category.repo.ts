@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 
 import {
+  CategoryIncludeTranslationsType,
   CategoryType,
   CreateCategoryBodyType,
   GetCategoriesQueryType,
@@ -28,7 +29,7 @@ export class CategoryRepo {
   }
 
   async findMany({ page, limit, parentId }: GetCategoriesQueryType): Promise<{
-    categories: CategoryType[]
+    categories: CategoryIncludeTranslationsType[]
     totalCategories: number
   }> {
     const where = {
@@ -40,6 +41,11 @@ export class CategoryRepo {
         where,
         skip: (page - 1) * limit,
         take: limit,
+        include: {
+          categoryTranslations: {
+            where: { deletedAt: null },
+          },
+        },
       }) as any,
       this.prisma.category.count({ where }),
     ])
@@ -54,6 +60,11 @@ export class CategoryRepo {
       where: {
         ...where,
         deletedAt: null,
+      },
+      include: {
+        categoryTranslations: {
+          where: { deletedAt: null },
+        },
       },
     }) as any
   }
