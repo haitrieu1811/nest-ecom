@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Permission" ALTER COLUMN "name" SET DATA TYPE VARCHAR(100);
