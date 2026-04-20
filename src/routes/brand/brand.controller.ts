@@ -11,7 +11,6 @@ import {
   UpdateBrandResDTO,
 } from 'src/routes/brand/brand.dto'
 import { BrandService } from 'src/routes/brand/brand.service'
-import ActiveRole from 'src/shared/decorators/active-role.decorator'
 import ActiveUser from 'src/shared/decorators/active-user.decorator'
 import { IsPublic } from 'src/shared/decorators/auth.decorator'
 import { PaginationQueryDTO } from 'src/shared/dtos/request.dto'
@@ -43,22 +42,13 @@ export class BrandController {
 
   @Put(':brandId')
   @ZodResponse({ type: UpdateBrandResDTO })
-  updateBrand(
-    @Body() body: UpdateBrandBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @Param() param: BrandIdParamDTO,
-    @ActiveRole('id') agentRoleId: number,
-  ) {
-    return this.brandService.updateBrand({ body, userId, brandId: param.brandId, agentRoleId })
+  updateBrand(@Body() body: UpdateBrandBodyDTO, @ActiveUser('userId') userId: number, @Param() param: BrandIdParamDTO) {
+    return this.brandService.updateBrand({ body, updatedById: userId, brandId: param.brandId })
   }
 
   @Delete(':brandId')
   @ZodResponse({ type: MessageResDTO })
-  deleteBrand(
-    @Param() param: BrandIdParamDTO,
-    @ActiveUser('userId') userId: number,
-    @ActiveRole('id') agentRoleId: number,
-  ) {
-    return this.brandService.deleteBrand({ brandId: param.brandId, userId, agentRoleId })
+  deleteBrand(@Param() param: BrandIdParamDTO) {
+    return this.brandService.deleteBrand(param.brandId)
   }
 }

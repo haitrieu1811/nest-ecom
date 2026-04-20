@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 
-import { CreateBrandBodyType, UpdateBrandBodyType } from 'src/routes/brand/brand.schema'
+import { BrandIncludeTranslationsType, CreateBrandBodyType, UpdateBrandBodyType } from 'src/routes/brand/brand.schema'
+import { ALL_LANGUAGES_CODE } from 'src/shared/constants/utils.constant'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { BrandType } from 'src/shared/schemas/shared-brand.schema'
@@ -24,8 +25,8 @@ export class BrandRepo {
     }) as any
   }
 
-  async findMany({ page, limit }: PaginationQueryType): Promise<{
-    brands: BrandType[]
+  async findMany({ page, limit, languageId }: PaginationQueryType & { languageId: string }): Promise<{
+    brands: BrandIncludeTranslationsType[]
     totalBrands: number
   }> {
     const [brands, totalBrands] = await Promise.all([
@@ -33,6 +34,16 @@ export class BrandRepo {
         where: { deletedAt: null },
         skip: (page - 1) * limit,
         take: limit,
+        include: {
+          brandTranslations: {
+            where:
+              languageId === ALL_LANGUAGES_CODE
+                ? {
+                    deletedAt: null,
+                  }
+                : { languageId, deletedAt: null },
+          },
+        },
       }) as any,
       this.prisma.brand.count({ where: { deletedAt: null } }),
     ])
@@ -42,11 +53,22 @@ export class BrandRepo {
     }
   }
 
-  findUnique(where: BrandWhereUniqueObject): Promise<BrandType | null> {
+  findUnique({
+    where,
+    languageId,
+  }: {
+    where: BrandWhereUniqueObject
+    languageId: string
+  }): Promise<BrandIncludeTranslationsType | null> {
     return this.prisma.brand.findUnique({
       where: {
         ...where,
         deletedAt: null,
+      },
+      include: {
+        brandTranslations: {
+          where: languageId === ALL_LANGUAGES_CODE ? { deletedAt: null } : { languageId, deletedAt: null },
+        },
       },
     }) as any
   }

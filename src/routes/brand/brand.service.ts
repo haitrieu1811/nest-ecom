@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import { I18nContext } from 'nestjs-i18n'
 
-import {
-  BrandAlreadyExistException,
-  BrandNotAuthorOrAdminException,
-  BrandNotFoundException,
-} from 'src/routes/brand/brand.error'
+import { BrandAlreadyExistException, BrandNotFoundException } from 'src/routes/brand/brand.error'
 import { BrandRepo } from 'src/routes/brand/brand.repo'
 import {
   CreateBrandBodyType,
@@ -15,43 +12,12 @@ import {
   UpdateBrandResType,
 } from 'src/routes/brand/brand.schema'
 import { isUniqueConstraintPrismaError } from 'src/shared/helpers'
-import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
 
 @Injectable()
 export class BrandService {
-  constructor(
-    private readonly brandRepo: BrandRepo,
-    private readonly sharedRoleRepo: SharedRoleRepo,
-  ) {}
-
-  private async validateAuthorOrAdmin({
-    brandId,
-    userId,
-    agentRoleId,
-  }: {
-    brandId: number
-    userId: number
-    agentRoleId: number
-  }): Promise<boolean> {
-    const [brand, adminRoleId] = await Promise.all([
-      this.brandRepo.findUnique({
-        id: brandId,
-      }),
-      this.sharedRoleRepo.getAdminRoleId(),
-    ])
-    if (!brand) {
-      throw BrandNotFoundException
-    }
-    if (agentRoleId === adminRoleId) {
-      return true
-    }
-    if (brand.createdById !== userId) {
-      throw BrandNotAuthorOrAdminException
-    }
-    return true
-  }
+  constructor(private readonly brandRepo: BrandRepo) {}
 
   async createBrand({ body, userId }: { body: CreateBrandBodyType; userId: number }): Promise<CreateBrandResType> {
     try {
@@ -69,20 +35,20 @@ export class BrandService {
   }
 
   async getBrands(query: PaginationQueryType): Promise<GetBrandsResType> {
-    const { brands, totalBrands } = await this.brandRepo.findMany(query)
+    const { brands, totalBrands } = await this.brandRepo.findMany({
+      ...query,
+      languageId: I18nContext.current()?.lang as string,
+    })
     return {
       data: brands,
-      pagination: {
-        ...query,
-        totalRows: totalBrands,
-        totalPages: Math.ceil(totalBrands / query.limit),
-      },
+      totalItems: totalBrands,
     }
   }
 
   async getBrand(brandId: number): Promise<GetBrandResType> {
     const brand = await this.brandRepo.findUnique({
-      id: brandId,
+      where: { id: brandId },
+      languageId: I18nContext.current()?.lang as string,
     })
     if (!brand) {
       throw BrandNotFoundException
@@ -92,22 +58,18 @@ export class BrandService {
 
   async updateBrand({
     body,
-    userId,
+    updatedById,
     brandId,
-    agentRoleId,
   }: {
     body: UpdateBrandBodyType
-    userId: number
+    updatedById: number
     brandId: number
-    agentRoleId: number
   }): Promise<UpdateBrandResType> {
     try {
-      // Chỉ người tạo brand hoặc admin mới được phép cập nhật brand đó
-      await this.validateAuthorOrAdmin({ brandId, userId, agentRoleId })
       const updatedBrand = await this.brandRepo.update({
         brandId,
         data: body,
-        updatedById: userId,
+        updatedById,
       })
       return updatedBrand
     } catch (error) {
@@ -118,17 +80,7 @@ export class BrandService {
     }
   }
 
-  async deleteBrand({
-    brandId,
-    userId,
-    agentRoleId,
-  }: {
-    brandId: number
-    userId: number
-    agentRoleId: number
-  }): Promise<MessageResType> {
-    // Chỉ người tạo brand hoặc admin mới được phép xóa brand đó
-    await this.validateAuthorOrAdmin({ brandId, userId, agentRoleId })
+  async deleteBrand(brandId: number): Promise<MessageResType> {
     await this.brandRepo.delete({
       brandId,
     })

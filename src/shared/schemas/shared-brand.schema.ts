@@ -5,6 +5,7 @@ export const BrandSchema = z
     id: z.int().positive(),
     logo: z.string().nullable(),
     name: z.string().max(100, 'Error.BrandNameIsTooLong'),
+    description: z.string().max(500, 'Error.BrandDescriptionIsTooLong').default(''),
     deletedAt: z.iso.datetime().nullable(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
