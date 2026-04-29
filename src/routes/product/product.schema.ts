@@ -111,6 +111,8 @@ export const GetProductsResSchema = z.object({
 
 export const GetProductResSchema = ProductIncludeTranslationsSchema
 
+export type VariantType = z.infer<typeof VariantSchema>
+export type VariantsType = z.infer<typeof VariantsSchema>
 export type ProductType = z.infer<typeof ProductSchema>
 export type ProductIncludeTranslationsType = z.infer<typeof ProductIncludeTranslationsSchema>
 export type ProductDetailType = z.infer<typeof ProductDetailSchema>

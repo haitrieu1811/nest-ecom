@@ -6,9 +6,9 @@ export const MessageResSchema = z.object({
 
 export const PaginationResSchema = z.object({
   page: z.number().positive(),
-  limit: z.number().positive(),
-  totalPages: z.number().positive(),
-  totalRows: z.number().positive(),
+  limit: z.number(),
+  totalPages: z.number(),
+  totalRows: z.number(),
 })
 
 export type MessageResType = z.infer<typeof MessageResSchema>
