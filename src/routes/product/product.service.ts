@@ -4,6 +4,8 @@ import { I18nContext } from 'nestjs-i18n'
 import { ProductNotFoundException } from 'src/routes/product/product.error'
 import { ProductRepo } from 'src/routes/product/product.repo'
 import { GetProductResType, GetProductsQueryType, GetProductsResType } from 'src/routes/product/product.schema'
+import { isNotFoundPrismaError } from 'src/shared/helpers'
+import { MessageResType } from 'src/shared/schemas/response.schema'
 
 @Injectable()
 export class ProductService {
@@ -31,5 +33,19 @@ export class ProductService {
       throw ProductNotFoundException
     }
     return product
+  }
+
+  async delete(productId: number): Promise<MessageResType> {
+    try {
+      await this.productRepo.delete({ id: productId })
+      return {
+        message: 'Success.ProductDeleted',
+      }
+    } catch (error) {
+      if (isNotFoundPrismaError(error)) {
+        throw ProductNotFoundException
+      }
+      throw error
+    }
   }
 }

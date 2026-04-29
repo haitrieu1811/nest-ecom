@@ -58,4 +58,30 @@ export class ProductRepo {
       },
     }) as any
   }
+
+  delete(where: ProductWhereUniqueInput, isHard?: boolean) {
+    if (isHard) {
+      return this.prisma.product.delete({
+        where,
+      })
+    } else {
+      const now = new Date()
+      return Promise.all([
+        this.prisma.product.update({
+          where,
+          data: {
+            deletedAt: now,
+          },
+        }),
+        this.prisma.sKU.updateMany({
+          where: {
+            productId: where.id,
+          },
+          data: {
+            deletedAt: now,
+          },
+        }),
+      ])
+    }
+  }
 }

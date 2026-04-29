@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common'
+import { Controller, Delete, Get, Param, Query } from '@nestjs/common'
 import { ZodResponse } from 'nestjs-zod'
 
 import {
@@ -9,6 +9,7 @@ import {
 } from 'src/routes/product/product.dto'
 import { ProductService } from 'src/routes/product/product.service'
 import { IsPublic } from 'src/shared/decorators/auth.decorator'
+import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
 @Controller('products')
 export class ProductController {
@@ -26,5 +27,11 @@ export class ProductController {
   @ZodResponse({ type: GetProductResDTO })
   getProduct(@Param() param: ProductIdParamDTO) {
     return this.productService.getProduct(param.productId)
+  }
+
+  @Delete(':productId')
+  @ZodResponse({ type: MessageResDTO })
+  deleteProduct(@Param() param: ProductIdParamDTO) {
+    return this.productService.delete(param.productId)
   }
 }
