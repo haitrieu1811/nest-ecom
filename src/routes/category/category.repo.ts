@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common'
 
 import {
-  CategoryIncludeTranslationsType,
-  CategoryType,
   CreateCategoryBodyType,
   GetCategoriesQueryType,
   UpdateCategoryBodyType,
 } from 'src/routes/category/category.schema'
 import { ALL_LANGUAGES_CODE } from 'src/shared/constants/utils.constant'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
+import { CategoryIncludeTranslationsType, CategoryType } from 'src/shared/schemas/shared-category.schema'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 type CategoryWhereUniqueObject = {

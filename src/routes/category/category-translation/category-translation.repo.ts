@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
 
 import {
-  CategoryTranslationType,
   CreateCategoryTranslationBodyType,
   UpdateCategoryTranslationBodyType,
 } from 'src/routes/category/category-translation/category-translation.schema'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
+import { CategoryTranslationType } from 'src/shared/schemas/shared-category-translation.schema'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 @Injectable()

@@ -14,6 +14,7 @@ import { CategoryModule } from 'src/routes/category/category.module'
 import { LanguageModule } from 'src/routes/language/language.module'
 import { MediaModule } from 'src/routes/media/media.module'
 import { PermissionModule } from 'src/routes/permission/permission.module'
+import { ProductModule } from 'src/routes/product/product.module'
 import { ProfileModule } from 'src/routes/profile/profile.module'
 import { RoleModule } from 'src/routes/role/role.module'
 import { UserModule } from 'src/routes/user/user.module'
@@ -45,6 +46,7 @@ import { SharedModule } from 'src/shared/shared.module'
     BrandTranslationModule,
     CategoryModule,
     CategoryTranslationModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,5 +1,7 @@
 import z from 'zod'
 
+import { BrandTranslationSchema } from 'src/shared/schemas/shared-brand-translation.schema'
+
 export const BrandSchema = z
   .object({
     id: z.int().positive(),
@@ -14,4 +16,9 @@ export const BrandSchema = z
   })
   .strict()
 
+export const BrandIncludeTranslationsSchema = BrandSchema.extend({
+  brandTranslations: z.array(BrandTranslationSchema),
+})
+
 export type BrandType = z.infer<typeof BrandSchema>
+export type BrandIncludeTranslationsType = z.infer<typeof BrandIncludeTranslationsSchema>

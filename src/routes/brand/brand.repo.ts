@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
 
-import { BrandIncludeTranslationsType, CreateBrandBodyType, UpdateBrandBodyType } from 'src/routes/brand/brand.schema'
+import { CreateBrandBodyType, UpdateBrandBodyType } from 'src/routes/brand/brand.schema'
 import { ALL_LANGUAGES_CODE } from 'src/shared/constants/utils.constant'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
-import { BrandType } from 'src/shared/schemas/shared-brand.schema'
+import { BrandIncludeTranslationsType, BrandType } from 'src/shared/schemas/shared-brand.schema'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 type BrandWhereUniqueObject = {

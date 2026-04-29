@@ -1,11 +1,6 @@
 import z from 'zod'
 
-import { BrandTranslationSchema } from 'src/shared/schemas/shared-brand-translation.schema'
-import { BrandSchema } from 'src/shared/schemas/shared-brand.schema'
-
-export const BrandIncludeTranslationsSchema = BrandSchema.extend({
-  brandTranslations: z.array(BrandTranslationSchema),
-})
+import { BrandIncludeTranslationsSchema, BrandSchema } from 'src/shared/schemas/shared-brand.schema'
 
 export const CreateBrandBodySchema = BrandSchema.pick({
   logo: true,
@@ -32,7 +27,6 @@ export const GetBrandsResSchema = z.object({
 
 export const GetBrandResSchema = BrandIncludeTranslationsSchema
 
-export type BrandIncludeTranslationsType = z.infer<typeof BrandIncludeTranslationsSchema>
 export type CreateBrandBodyType = z.infer<typeof CreateBrandBodySchema>
 export type CreateBrandResType = z.infer<typeof CreateBrandResSchema>
 export type UpdateBrandBodyType = z.infer<typeof UpdateBrandBodySchema>

@@ -17,3 +17,15 @@ export type RefreshTokenPayload = RefreshTokenPayloadInput & {
   iat: number
   exp: number
 }
+
+export type Variant = {
+  value: string
+  options: string[]
+}
+
+export type SKU = {
+  value: string
+  price: number
+  stock: number
+  image: string
+}
