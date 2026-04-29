@@ -92,7 +92,10 @@ export const UpdateProductResSchema = ProductSchema
 
 export const ProductIdParamSchema = z
   .object({
-    productId: z.coerce.number().int('Error.ProductIdMustBeAnInteger').positive('Error.ProductIdMustBePositive'),
+    productId: z.coerce
+      .number('Error.ProductIdMustBeANumber')
+      .int('Error.ProductIdMustBeAnInteger')
+      .positive('Error.ProductIdMustBePositive'),
   })
   .strict()
 
