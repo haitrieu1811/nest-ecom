@@ -3,7 +3,7 @@ import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
 import { Prisma } from 'generated/prisma/client'
-import { SKU, Variant } from 'src/shared/types/utils.type'
+import { SKUType, VariantsType } from 'src/shared/schemas/shared-product.schema'
 
 export const generateOTP = () => {
   return randomInt(100000, 1000000).toString()
@@ -42,7 +42,7 @@ export const generateFilename = (filename: string) => {
   return `${uuidv4()}${ext}`
 }
 
-export const generateSKUs = (variants: Variant[]): SKU[] => {
+export const generateSKUs = (variants: VariantsType): Pick<SKUType, 'value' | 'price' | 'stock' | 'images'>[] => {
   if (variants.length === 0) return []
 
   const combine = (arrays: string[][]): string[][] => {
@@ -56,6 +56,6 @@ export const generateSKUs = (variants: Variant[]): SKU[] => {
     value: combo.join('-'),
     price: 0,
     stock: 100,
-    image: '',
+    images: [],
   }))
 }

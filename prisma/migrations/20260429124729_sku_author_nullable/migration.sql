@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "SKU" ALTER COLUMN "createdById" DROP NOT NULL,
+ALTER COLUMN "updatedById" DROP NOT NULL;

@@ -243,6 +243,7 @@ model Product {
   skus                SKU[]                @relation("SKUProduct")
   skuSnapshots        SKUSnapshot[]        @relation("SKUSnapshotProduct")
   reviews             Review[]             @relation("ReviewProduct")
+  categories          Category[]
 
   @@index([deletedAt])
 }
@@ -286,6 +287,7 @@ model Category {
   updatedBy          User?      @relation("CategoryUpdatedBy", fields: [updatedById], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   categoryTranslations CategoryTranslation[] @relation("CategoryTranslationCategory")
+  products             Product[]
 
   @@index([deletedAt])
 }
@@ -324,10 +326,10 @@ model SKU {
 
   productId   Int
   product     Product @relation("SKUProduct", fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  createdById Int
-  createdBy   User    @relation("SKUCreatedBy", fields: [createdById], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  updatedById Int
-  updatedBy   User    @relation("SKUUpdatedBy", fields: [updatedById], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  createdById Int?
+  createdBy   User?   @relation("SKUCreatedBy", fields: [createdById], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  updatedById Int?
+  updatedBy   User?   @relation("SKUUpdatedBy", fields: [updatedById], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   cartItems    CartItem[]    @relation("CartItemSKU")
   skuSnapshots SKUSnapshot[] @relation("SKUSnapshotSKU")

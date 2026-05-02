@@ -53,7 +53,7 @@ export class BrandRepo {
     }
   }
 
-  findUnique({
+  findUniqueIncludeTranslations({
     where,
     languageId,
   }: {

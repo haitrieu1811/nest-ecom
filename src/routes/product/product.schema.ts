@@ -1,40 +1,12 @@
 import z from 'zod'
 
 import { ProductTranslationSchema } from 'src/routes/product/product-translation/product-translation.schema'
-import { SKUSchema } from 'src/routes/product/sku.schema'
+import { UpsertSKUBodySchema } from 'src/routes/product/sku.schema'
 import { PaginationQuerySchema } from 'src/shared/schemas/request.shema'
 import { PaginationResSchema } from 'src/shared/schemas/response.schema'
 import { BrandIncludeTranslationsSchema } from 'src/shared/schemas/shared-brand.schema'
 import { CategoryIncludeTranslationsSchema } from 'src/shared/schemas/shared-category.schema'
-
-const VariantSchema = z.object({
-  value: z.string('Error.ProductVariantValueMustBeAString'),
-  options: z.array(z.string('Error.ProductVariantOptionMustBeAString')),
-})
-
-const VariantsSchema = z
-  .array(VariantSchema, 'Error.ProductVariantsMustBeAnArrayOfVariants')
-  .superRefine((variants, ctx) => {
-    for (let i = 0; i < variants.length; i++) {
-      const variant = variants[i]
-      const isDifferent = variants.findIndex((v) => v.value === variant.value) !== i
-      if (!isDifferent) {
-        return ctx.addIssue({
-          code: 'custom',
-          message: `Error.ProductVariantValueMustBeUnique: ${variant.value}`,
-          path: ['variants'],
-        })
-      }
-      const isDifferentOption = variant.options.findIndex((o) => variant.options.includes(o)) !== -1
-      if (isDifferentOption) {
-        return ctx.addIssue({
-          code: 'custom',
-          message: `Error.ProductVariantOptionsMustBeUnique: ${variant.value}`,
-          path: ['variants'],
-        })
-      }
-    }
-  })
+import { SKUSchema, VariantsSchema } from 'src/shared/schemas/shared-product.schema'
 
 export const ProductSchema = z
   .object({
@@ -44,19 +16,19 @@ export const ProductSchema = z
     basePrice: z
       .number('Error.ProductBasePriceMustBeANumber')
       .int('Error.ProductBasePriceMustBeAnInteger')
-      .positive('Error.ProductBasePriceMustBePositive'),
+      .nonnegative('Error.ProductBasePriceMustBeNonNegative'),
     virtualPrice: z
       .number('Error.ProductVirtualPriceMustBeANumber')
       .int('Error.ProductVirtualPriceMustBeAnInteger')
-      .positive('Error.ProductVirtualPriceMustBePositive'),
-    thumbnail: z.string('Error.ProductThumbnailMustBeAString').nullable(),
-    images: z.array(z.string('Error.ProductImageMustBeAString')).nullable(),
+      .nonnegative('Error.ProductVirtualPriceMustBeNonNegative'),
+    thumbnail: z.string('Error.ProductThumbnailMustBeAStringOrNull').nullable(),
+    images: z.array(z.string('Error.ProductImageMustBeAString')),
     variants: VariantsSchema,
     deletedAt: z.iso.datetime().nullable(),
-    publishedAt: z.iso.datetime().nullable(),
+    publishedAt: z.iso.datetime('Error.ProductPublishedAtMustBeAValidDate').nullable(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
-    brandId: z.int().positive().nullable(),
+    brandId: z.int('Error.BrandIdMustBeANumber').positive('Error.BrandIdMustBePositive').nullable(),
     createdById: z.int().positive().nullable(),
     updatedById: z.int().positive().nullable(),
   })
@@ -82,9 +54,14 @@ export const CreateProductBodySchema = ProductSchema.pick({
   variants: true,
   publishedAt: true,
   brandId: true,
-}).strict()
+})
+  .extend({
+    categories: z.array(z.number().int().positive(), 'Error.ProductCategoriesMustBeAnArrayOfCategoryIds').default([]),
+    skus: z.array(UpsertSKUBodySchema, 'Error.ProductSKUsMustBeAnArrayOfSKUs').default([]),
+  })
+  .strict()
 
-export const CreateProductResSchema = ProductSchema
+export const CreateProductResSchema = ProductDetailSchema
 
 export const UpdateProductBodySchema = CreateProductBodySchema.strict()
 
@@ -114,8 +91,6 @@ export const GetProductsResSchema = z.object({
 
 export const GetProductResSchema = ProductIncludeTranslationsSchema
 
-export type VariantType = z.infer<typeof VariantSchema>
-export type VariantsType = z.infer<typeof VariantsSchema>
 export type ProductType = z.infer<typeof ProductSchema>
 export type ProductIncludeTranslationsType = z.infer<typeof ProductIncludeTranslationsSchema>
 export type ProductDetailType = z.infer<typeof ProductDetailSchema>

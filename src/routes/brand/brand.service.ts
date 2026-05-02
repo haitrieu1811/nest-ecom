@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { I18nContext } from 'nestjs-i18n'
 
-import { BrandAlreadyExistException, BrandNotFoundException } from 'src/routes/brand/brand.error'
+import { BrandAlreadyExistException } from 'src/routes/brand/brand.error'
 import { BrandRepo } from 'src/routes/brand/brand.repo'
 import {
   CreateBrandBodyType,
@@ -11,6 +11,7 @@ import {
   UpdateBrandBodyType,
   UpdateBrandResType,
 } from 'src/routes/brand/brand.schema'
+import { BrandNotFoundException } from 'src/shared/error'
 import { isUniqueConstraintPrismaError } from 'src/shared/helpers'
 import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
@@ -46,7 +47,7 @@ export class BrandService {
   }
 
   async getBrand(brandId: number): Promise<GetBrandResType> {
-    const brand = await this.brandRepo.findUnique({
+    const brand = await this.brandRepo.findUniqueIncludeTranslations({
       where: { id: brandId },
       languageId: I18nContext.current()?.lang as string,
     })

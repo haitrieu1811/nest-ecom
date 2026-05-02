@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common'
 
 import { ProductWhereUniqueInput } from 'generated/prisma/models'
-import { GetProductsQueryType, ProductIncludeTranslationsType } from 'src/routes/product/product.schema'
+import {
+  CreateProductBodyType,
+  GetProductsQueryType,
+  ProductDetailType,
+  ProductIncludeTranslationsType,
+} from 'src/routes/product/product.schema'
 import { ALL_LANGUAGES_CODE } from 'src/shared/constants/utils.constant'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -68,7 +73,10 @@ export class ProductRepo {
       const now = new Date()
       return Promise.all([
         this.prisma.product.update({
-          where,
+          where: {
+            ...where,
+            deletedAt: null,
+          },
           data: {
             deletedAt: now,
           },
@@ -83,5 +91,58 @@ export class ProductRepo {
         }),
       ])
     }
+  }
+
+  async create({
+    data,
+    createdById,
+  }: {
+    data: CreateProductBodyType
+    createdById: number
+  }): Promise<ProductDetailType | null> {
+    const { skus, categories, ...productData } = data
+    const { id } = await this.prisma.product.create({
+      data: {
+        ...productData,
+        createdById,
+
+        categories: {
+          connect: categories.map((categoryId) => ({ id: categoryId })),
+        },
+        skus: {
+          createMany: {
+            data: skus,
+          },
+        },
+      },
+    })
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        productTranslations: {
+          where: { deletedAt: null },
+        },
+        categories: {
+          where: { deletedAt: null },
+          include: {
+            categoryTranslations: {
+              where: { deletedAt: null },
+            },
+          },
+        },
+        brand: {
+          where: { deletedAt: null },
+          include: {
+            brandTranslations: {
+              where: { deletedAt: null },
+            },
+          },
+        },
+        skus: {
+          where: { deletedAt: null },
+        },
+      },
+    })
+    return product as any
   }
 }

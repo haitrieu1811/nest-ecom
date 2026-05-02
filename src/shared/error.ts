@@ -19,3 +19,10 @@ export const PhoneNumberAlreadyExistException = new UnprocessableEntityException
 ])
 
 export const OnlyAdminActionException = new ForbiddenException('Error.OnlyAdminAction')
+
+export const BrandNotFoundException = new UnprocessableEntityException([
+  {
+    path: 'brandId',
+    message: 'Error.BrandNotFound',
+  },
+])

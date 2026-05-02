@@ -1,18 +1,6 @@
 import z from 'zod'
 
-export const SKUSchema = z.object({
-  id: z.int().positive(),
-  value: z.string('Error.SKUValueMustBeAString').max(500, 'Error.SKUValueIsTooLong'),
-  price: z.int('Error.SKUPriceMustBeAnInteger').positive('Error.SKUPriceMustBePositive'),
-  stock: z.int('Error.SKUStockMustBeAnInteger').positive('Error.SKUStockMustBePositive'),
-  images: z.array(z.string('Error.SKUImageMustBeAString')),
-  deletedAt: z.iso.datetime().nullable(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-  createdById: z.int().positive().nullable(),
-  updatedById: z.int().positive().nullable(),
-  productId: z.int().positive(),
-})
+import { SKUSchema } from 'src/shared/schemas/shared-product.schema'
 
 export const UpsertSKUBodySchema = SKUSchema.pick({
   value: true,
@@ -21,5 +9,4 @@ export const UpsertSKUBodySchema = SKUSchema.pick({
   images: true,
 }).strict()
 
-export type SKUType = z.infer<typeof SKUSchema>
 export type UpsertSKUBodyType = z.infer<typeof UpsertSKUBodySchema>

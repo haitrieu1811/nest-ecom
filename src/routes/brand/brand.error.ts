@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
+import { ForbiddenException, UnprocessableEntityException } from '@nestjs/common'
 
 export const BrandAlreadyExistException = new UnprocessableEntityException([
   {
@@ -6,7 +6,5 @@ export const BrandAlreadyExistException = new UnprocessableEntityException([
     message: 'Error.BrandAlreadyExist',
   },
 ])
-
-export const BrandNotFoundException = new NotFoundException('Error.BrandNotFound')
 
 export const BrandNotAuthorOrAdminException = new ForbiddenException('Error.BrandNotAuthorOrAdmin')
