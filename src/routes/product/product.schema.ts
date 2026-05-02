@@ -89,7 +89,7 @@ export const GetProductsResSchema = z.object({
   pagination: PaginationResSchema,
 })
 
-export const GetProductResSchema = ProductIncludeTranslationsSchema
+export const GetProductResSchema = ProductDetailSchema
 
 export type ProductType = z.infer<typeof ProductSchema>
 export type ProductIncludeTranslationsType = z.infer<typeof ProductIncludeTranslationsSchema>

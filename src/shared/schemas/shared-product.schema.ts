@@ -1,8 +1,8 @@
 import z from 'zod'
 
 export const VariantSchema = z.object({
-  value: z.string('Error.ProductVariantValueMustBeAString'),
-  options: z.array(z.string('Error.ProductVariantOptionMustBeAString')),
+  value: z.string('Error.ProductVariantValueMustBeAString').trim(),
+  options: z.array(z.string('Error.ProductVariantOptionMustBeAString').trim()),
 })
 
 export const VariantsSchema = z
@@ -34,7 +34,7 @@ export const VariantsSchema = z
 
 export const SKUSchema = z.object({
   id: z.int().positive(),
-  value: z.string('Error.SKUValueMustBeAString').max(500, 'Error.SKUValueIsTooLong'),
+  value: z.string('Error.SKUValueMustBeAString').max(500, 'Error.SKUValueIsTooLong').trim(),
   price: z.int('Error.SKUPriceMustBeAnInteger').nonnegative('Error.SKUPriceMustBeNonNegative'),
   stock: z.int('Error.SKUStockMustBeAnInteger').nonnegative('Error.SKUStockMustBeNonNegative'),
   images: z.array(z.string('Error.SKUImageMustBeAString')),

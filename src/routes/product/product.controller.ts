@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { ZodResponse } from 'nestjs-zod'
 
 import {
@@ -8,6 +8,8 @@ import {
   GetProductsQueryDTO,
   GetProductsResDTO,
   ProductIdParamDTO,
+  UpdateProductBodyDTO,
+  UpdateProductResDTO,
 } from 'src/routes/product/product.dto'
 import { ProductService } from 'src/routes/product/product.service'
 import ActiveUser from 'src/shared/decorators/active-user.decorator'
@@ -44,6 +46,20 @@ export class ProductController {
     return this.productService.createProduct({
       body,
       createdById,
+    })
+  }
+
+  @Put(':productId')
+  @ZodResponse({ type: UpdateProductResDTO })
+  updateProduct(
+    @Param() param: ProductIdParamDTO,
+    @Body() body: UpdateProductBodyDTO,
+    @ActiveUser('userId') updatedById: number,
+  ) {
+    return this.productService.updateProduct({
+      productId: param.productId,
+      body,
+      updatedById,
     })
   }
 }
