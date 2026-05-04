@@ -10,7 +10,8 @@ export const VariantsSchema = z
   .superRefine((variants, ctx) => {
     for (let i = 0; i < variants.length; i++) {
       const variant = variants[i]
-      const isExistingVariant = variants.findIndex((v) => v.value === variant.value) !== i
+      const isExistingVariant =
+        variants.findIndex((v) => v.value.toLowerCase().trim() === variant.value.toLowerCase().trim()) !== i
       if (isExistingVariant) {
         return ctx.addIssue({
           code: 'custom',
@@ -19,7 +20,8 @@ export const VariantsSchema = z
         })
       }
       const isDifferentOption = variant.options.some((option, index) => {
-        const isExistingOption = variant.options.findIndex((o) => o.toLowerCase() === option.toLowerCase()) !== index
+        const isExistingOption =
+          variant.options.findIndex((o) => o.toLowerCase().trim() === option.toLowerCase().trim()) !== index
         return isExistingOption
       })
       if (isDifferentOption) {

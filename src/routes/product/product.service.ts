@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { I18nContext } from 'nestjs-i18n'
 
-import { ProductNotFoundException, SomeProductCategoriesNotFoundException } from 'src/routes/product/product.error'
+import { SomeProductCategoriesNotFoundException } from 'src/routes/product/product.error'
 import { ProductRepo } from 'src/routes/product/product.repo'
 import {
   CreateProductBodyType,
@@ -12,7 +12,7 @@ import {
   UpdateProductBodyType,
   UpdateProductResType,
 } from 'src/routes/product/product.schema'
-import { BrandNotFoundException } from 'src/shared/error'
+import { BrandNotFoundException, ProductNotFoundException } from 'src/shared/error'
 import { isNotFoundPrismaError } from 'src/shared/helpers'
 import { SharedBrandRepo } from 'src/shared/repositories/shared-brand.repo'
 import { SharedCategoryRepo } from 'src/shared/repositories/shared-category.repo'

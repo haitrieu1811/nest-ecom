@@ -15,4 +15,40 @@ export const ProductTranslationSchema = z
   })
   .strict()
 
+export const CreateProductTranslationBodySchema = ProductTranslationSchema.pick({
+  name: true,
+  description: true,
+  languageId: true,
+})
+  .extend({
+    productId: z.int('Error.ProductIdMustBeAnInteger').positive('Error.ProductIdMustBePositive'),
+  })
+  .strict()
+
+export const CreateProductTranslationResSchema = ProductTranslationSchema
+
+export const UpdateProductTranslationBodySchema = ProductTranslationSchema.pick({
+  name: true,
+  description: true,
+}).strict()
+
+export const UpdateProductTranslationResSchema = ProductTranslationSchema
+
+export const ProductTranslationIdParamSchema = z
+  .object({
+    productTranslationId: z.coerce
+      .number('Error.ProductTranslationIdMustBeANumber')
+      .int('Error.ProductTranslationIdMustBeAnInteger')
+      .positive('Error.ProductTranslationIdMustBePositive'),
+  })
+  .strict()
+
+export const GetProductTranslationResSchema = ProductTranslationSchema
+
 export type ProductTranslationType = z.infer<typeof ProductTranslationSchema>
+export type CreateProductTranslationBodyType = z.infer<typeof CreateProductTranslationBodySchema>
+export type CreateProductTranslationResType = z.infer<typeof CreateProductTranslationResSchema>
+export type UpdateProductTranslationBodyType = z.infer<typeof UpdateProductTranslationBodySchema>
+export type UpdateProductTranslationResType = z.infer<typeof UpdateProductTranslationResSchema>
+export type ProductTranslationIdParamType = z.infer<typeof ProductTranslationIdParamSchema>
+export type GetProductTranslationResType = z.infer<typeof GetProductTranslationResSchema>

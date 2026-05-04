@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
-import { LanguageAlreadyExistException, LanguageNotFoundException } from 'src/routes/language/language.error'
+import { LanguageAlreadyExistException } from 'src/routes/language/language.error'
 import { LanguageRepo } from 'src/routes/language/language.repo'
 import {
   CreateLanguageBodyType,
@@ -9,6 +9,7 @@ import {
   GetLanguagesResType,
   UpdateLanguageBodyType,
 } from 'src/routes/language/language.schema'
+import { LanguageNotFoundException } from 'src/shared/error'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
 import { MessageResType } from 'src/shared/schemas/response.schema'
 

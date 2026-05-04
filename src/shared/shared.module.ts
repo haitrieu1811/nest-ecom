@@ -5,6 +5,8 @@ import { AccessTokenGuard } from 'src/shared/guards/access-token.guard'
 import { ApiKeyGuard } from 'src/shared/guards/api-key.guard'
 import { SharedBrandRepo } from 'src/shared/repositories/shared-brand.repo'
 import { SharedCategoryRepo } from 'src/shared/repositories/shared-category.repo'
+import { SharedLanguageRepo } from 'src/shared/repositories/shared-language.repo'
+import { SharedProductRepo } from 'src/shared/repositories/shared-product.repo'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
 import { TwoFactorAuthService } from 'src/shared/services/2fa.service'
@@ -17,16 +19,18 @@ import { TokenService } from 'src/shared/services/token.service'
 const SHARED_PROVIDERS = [
   PrismaService,
   HashingService,
-  SharedRoleRepo,
-  SharedUserRepo,
-  SharedBrandRepo,
-  SharedCategoryRepo,
   EmailService,
   TokenService,
   AccessTokenGuard,
   ApiKeyGuard,
   TwoFactorAuthService,
   S3Service,
+  SharedRoleRepo,
+  SharedUserRepo,
+  SharedBrandRepo,
+  SharedCategoryRepo,
+  SharedProductRepo,
+  SharedLanguageRepo,
 ]
 
 @Global()

@@ -1,6 +1,4 @@
-import { NotFoundException, UnprocessableEntityException } from '@nestjs/common'
-
-export const ProductNotFoundException = new NotFoundException('Error.ProductNotFound')
+import { UnprocessableEntityException } from '@nestjs/common'
 
 export const SomeProductCategoriesNotFoundException = new UnprocessableEntityException([
   {

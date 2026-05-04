@@ -21,11 +21,7 @@ const generateSKUs = (variants: VariantsType): Pick<SKUType, 'value' | 'price' |
 const variants: VariantsType = [
   {
     value: 'Màu sắc',
-    options: ['Đỏ', 'Vàng', 'Tím'],
-  },
-  {
-    value: 'Kích thước',
-    options: ['S', 'M', 'L'],
+    options: ['Trắng', 'Xanh'],
   },
 ]
 

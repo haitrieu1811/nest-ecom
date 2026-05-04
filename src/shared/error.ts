@@ -26,3 +26,7 @@ export const BrandNotFoundException = new UnprocessableEntityException([
     message: 'Error.BrandNotFound',
   },
 ])
+
+export const LanguageNotFoundException = new NotFoundException('Error.LanguageNotFound')
+
+export const ProductNotFoundException = new NotFoundException('Error.ProductNotFound')
