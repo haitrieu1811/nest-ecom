@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
-import { ProductWhereUniqueInput } from 'generated/prisma/models'
+import { ProductWhereInput, ProductWhereUniqueInput } from 'generated/prisma/models'
 import {
   CreateProductBodyType,
   GetProductsQueryType,
@@ -18,25 +18,41 @@ import { PrismaService } from 'src/shared/services/prisma.service'
 export class ProductRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findMany(
-    query: GetProductsQueryType,
-    languageId: string,
-  ): Promise<{
+  async findMany({
+    query,
+    languageId,
+  }: {
+    query: GetProductsQueryType & {
+      isPublic?: boolean
+    }
+    languageId: string
+  }): Promise<{
     totalProducts: number
     products: ProductIncludeTranslationsType[]
   }> {
     const skip = (query.page - 1) * query.limit
     const take = query.limit
+    let where: ProductWhereInput = {
+      deletedAt: null,
+      createdById: query.createdById ? query.createdById : undefined,
+    }
+    // Sản phẩm public là sản phẩm đã được publish (publishedAt <= now)
+    if (query.isPublic === true) {
+      where.publishedAt = { lte: new Date(), not: null }
+    }
+    // Sản phẩm chưa public là sản phẩm chưa được publish (publishedAt > now hoặc publishedAt = null)
+    else if (query.isPublic === false) {
+      where = {
+        ...where,
+        OR: [{ publishedAt: { gt: new Date() } }, { publishedAt: null }],
+      }
+    }
     const [totalProducts, products] = await Promise.all([
       this.prisma.product.count({
-        where: {
-          deletedAt: null,
-        },
+        where,
       }),
       this.prisma.product.findMany({
-        where: {
-          deletedAt: null,
-        },
+        where,
         include: {
           productTranslations: {
             where: languageId === ALL_LANGUAGES_CODE ? { deletedAt: null } : { languageId, deletedAt: null },
@@ -52,9 +68,21 @@ export class ProductRepo {
     }
   }
 
-  findUniqueDetail(where: ProductWhereUniqueInput, languageId: string): Promise<ProductDetailType | null> {
+  findDetail({
+    productId,
+    languageId,
+    isPublic,
+  }: {
+    productId: number
+    languageId: string
+    isPublic?: boolean
+  }): Promise<ProductDetailType | null> {
     return this.prisma.product.findUnique({
-      where,
+      where: {
+        id: productId,
+        deletedAt: null,
+        publishedAt: isPublic ? { lte: new Date(), not: null } : undefined,
+      },
       include: {
         productTranslations: {
           where: languageId === ALL_LANGUAGES_CODE ? { deletedAt: null } : { languageId, deletedAt: null },
@@ -100,6 +128,15 @@ export class ProductRepo {
           },
         }),
         this.prisma.sKU.updateMany({
+          where: {
+            productId: where.id,
+            deletedAt: null,
+          },
+          data: {
+            deletedAt: now,
+          },
+        }),
+        this.prisma.productTranslation.updateMany({
           where: {
             productId: where.id,
           },

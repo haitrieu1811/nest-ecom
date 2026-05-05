@@ -336,6 +336,7 @@ model SKU {
 
   @@unique([value, productId])
   @@index([deletedAt])
+  @@index([productId])
 }
 
 model CartItem {

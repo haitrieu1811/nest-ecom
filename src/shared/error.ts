@@ -30,3 +30,5 @@ export const BrandNotFoundException = new UnprocessableEntityException([
 export const LanguageNotFoundException = new NotFoundException('Error.LanguageNotFound')
 
 export const ProductNotFoundException = new NotFoundException('Error.ProductNotFound')
+
+export const PrivilegeException = new ForbiddenException('Error.CannotAccessBecauseOfPrivilege')

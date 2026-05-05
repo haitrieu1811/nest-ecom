@@ -76,12 +76,47 @@ export const ProductIdParamSchema = z
   })
   .strict()
 
+// Query params dành cho client
 export const GetProductsQuerySchema = PaginationQuerySchema.extend({
   brandId: z.coerce
     .number('Error.BrandIdMustBeAnInteger')
     .int('Error.BrandIdMustBeAnInteger')
     .positive('Error.BrandIdMustBePositive')
     .optional(),
+  categories: z
+    .array(
+      z.coerce
+        .number('Error.CategoryIdMustBeANumber')
+        .int('Error.CategoryIdMustBeAnInteger')
+        .positive('Error.CategoryIdMustBePositive'),
+      'Error.CategoriesMustBeAnArrayOfCategoryIds',
+    )
+    .optional(),
+  name: z.string('Error.NameMustBeAString').optional(),
+  minPrice: z.coerce
+    .number('Error.MinPriceMustBeANumber')
+    .int('Error.MinPriceMustBeAnInteger')
+    .nonnegative('Error.MinPriceMustBeNonNegative')
+    .optional(),
+  maxPrice: z.coerce
+    .number('Error.MaxPriceMustBeANumber')
+    .int('Error.MaxPriceMustBeAnInteger')
+    .nonnegative('Error.MaxPriceMustBeNonNegative')
+    .optional(),
+  createdById: z.coerce
+    .number('Error.CreatedByIdMustBeANumber')
+    .int('Error.CreatedByIdMustBeAnInteger')
+    .positive('Error.CreatedByIdMustBePositive')
+    .optional(),
+})
+
+// Query params dành cho admin, manage, seller
+export const GetManageProductsQuerySchema = GetProductsQuerySchema.extend({
+  isPublic: z.preprocess((value) => value === 'true', z.boolean('Error.IsPublicMustBeABoolean')).optional(),
+  createdById: z.coerce
+    .number('Error.CreatedByIdMustBeANumber')
+    .int('Error.CreatedByIdMustBeAnInteger')
+    .positive('Error.CreatedByIdMustBePositive'),
 })
 
 export const GetProductsResSchema = z.object({
@@ -100,5 +135,6 @@ export type UpdateProductBodyType = z.infer<typeof UpdateProductBodySchema>
 export type UpdateProductResType = z.infer<typeof UpdateProductResSchema>
 export type ProductIdParamType = z.infer<typeof ProductIdParamSchema>
 export type GetProductsQueryType = z.infer<typeof GetProductsQuerySchema>
+export type GetManageProductsQueryType = z.infer<typeof GetManageProductsQuerySchema>
 export type GetProductsResType = z.infer<typeof GetProductsResSchema>
 export type GetProductResType = z.infer<typeof GetProductResSchema>
