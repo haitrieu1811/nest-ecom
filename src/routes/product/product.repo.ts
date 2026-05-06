@@ -47,6 +47,30 @@ export class ProductRepo {
         OR: [{ publishedAt: { gt: new Date() } }, { publishedAt: null }],
       }
     }
+    // Lọc theo tên sản phẩm
+    if (query.name) {
+      where.name = { contains: query.name, mode: 'insensitive' }
+    }
+    // Lọc theo nhãn hiệu sản phẩm
+    if (query.brandId) {
+      where.brandId = query.brandId
+    }
+    // Lọc theo danh mục sản phẩm
+    if (query.categories && query.categories.length > 0) {
+      where.categories = {
+        some: {
+          id: { in: query.categories },
+          deletedAt: null,
+        },
+      }
+    }
+    // Lọc theo khoảng giá
+    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+      where.basePrice = {
+        gte: query.minPrice,
+        lte: query.maxPrice,
+      }
+    }
     const [totalProducts, products] = await Promise.all([
       this.prisma.product.count({
         where,
@@ -60,6 +84,9 @@ export class ProductRepo {
         },
         skip,
         take,
+        orderBy: {
+          [query.sortBy]: query.orderBy,
+        },
       }) as any,
     ])
     return {

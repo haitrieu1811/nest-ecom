@@ -2,6 +2,7 @@ import z from 'zod'
 
 import { ProductTranslationSchema } from 'src/routes/product/product-translation/product-translation.schema'
 import { UpsertSKUBodySchema } from 'src/routes/product/sku.schema'
+import { ORDER_BY, SORT_BY } from 'src/shared/constants/utils.constant'
 import { PaginationQuerySchema } from 'src/shared/schemas/request.shema'
 import { PaginationResSchema } from 'src/shared/schemas/response.schema'
 import { BrandIncludeTranslationsSchema } from 'src/shared/schemas/shared-brand.schema'
@@ -84,15 +85,23 @@ export const GetProductsQuerySchema = PaginationQuerySchema.extend({
     .positive('Error.BrandIdMustBePositive')
     .optional(),
   categories: z
-    .array(
-      z.coerce
-        .number('Error.CategoryIdMustBeANumber')
-        .int('Error.CategoryIdMustBeAnInteger')
-        .positive('Error.CategoryIdMustBePositive'),
-      'Error.CategoriesMustBeAnArrayOfCategoryIds',
+    .preprocess(
+      (value) => {
+        if (typeof value === 'string') {
+          return [value]
+        }
+        return value
+      },
+      z.array(
+        z.coerce
+          .number('Error.CategoryIdMustBeANumber')
+          .int('Error.CategoryIdMustBeAnInteger')
+          .positive('Error.CategoryIdMustBePositive'),
+        'Error.CategoriesMustBeAnArrayOfCategoryIds',
+      ),
     )
     .optional(),
-  name: z.string('Error.NameMustBeAString').optional(),
+  name: z.string('Error.NameMustBeAString').trim().optional(),
   minPrice: z.coerce
     .number('Error.MinPriceMustBeANumber')
     .int('Error.MinPriceMustBeAnInteger')
@@ -108,6 +117,10 @@ export const GetProductsQuerySchema = PaginationQuerySchema.extend({
     .int('Error.CreatedByIdMustBeAnInteger')
     .positive('Error.CreatedByIdMustBePositive')
     .optional(),
+  sortBy: z
+    .enum([SORT_BY.NAME, SORT_BY.BASE_PRICE, SORT_BY.CREATED_AT], 'Error.SortByMustBeNameOrBasePriceOrCreatedAt')
+    .default(SORT_BY.CREATED_AT),
+  orderBy: z.enum([ORDER_BY.ASC, ORDER_BY.DESC], 'Error.OrderByMustBeAscOrDesc').default(ORDER_BY.DESC),
 })
 
 // Query params dành cho admin, manage, seller

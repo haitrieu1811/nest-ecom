@@ -354,6 +354,7 @@ model CartItem {
 model Order {
   id        Int         @id @default(autoincrement())
   status    OrderStatus @default(PENDING_CONFIRMATION)
+  deletedAt DateTime?
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
@@ -363,6 +364,8 @@ model Order {
   shop   User? @relation("OrderShop", fields: [shopId], references: [id], onDelete: SetNull, onUpdate: NoAction)
 
   items SKUSnapshot[] @relation("SKUSnapshotOrder")
+
+  @@index([status, deletedAt])
 }
 
 model SKUSnapshot {
