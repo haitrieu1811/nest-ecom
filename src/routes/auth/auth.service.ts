@@ -21,7 +21,7 @@ import {
   Disable2FABodyType,
   Enable2FAResType,
   LoginBodyType,
-  LoginResTyoe,
+  LoginResType,
   LogoutBodyType,
   RefreshTokenBodyType,
   RefreshTokenResType,
@@ -33,7 +33,7 @@ import {
 } from 'src/routes/auth/auth.schema'
 import envConfig from 'src/shared/config'
 import { TypeOfVerificationCode, VerificationCodeType } from 'src/shared/constants/auth.constant'
-import { EmailAlreadyExistException } from 'src/shared/error'
+import { EmailAlreadyExistException, RoleNotFoundException } from 'src/shared/error'
 import { generateOTP } from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
@@ -109,12 +109,10 @@ export class AuthService {
 
   async register({
     body,
-    roleId,
     ip,
     userAgent,
   }: {
     body: RegisterBodyType
-    roleId: number
     ip: string
     userAgent: string
   }): Promise<RegisterResType> {
@@ -124,6 +122,13 @@ export class AuthService {
     })
     if (user) {
       throw EmailAlreadyExistException
+    }
+    // Kiểm tra roleId có tồn tại không
+    const role = await this.sharedRoleRepo.findUnique({
+      id: body.roleId,
+    })
+    if (!role) {
+      throw RoleNotFoundException
     }
     // Kiểm tra OTP
     await this.validateVerificationCode({
@@ -136,8 +141,9 @@ export class AuthService {
       data: {
         email: body.email,
         password: body.password,
+        roleId: body.roleId,
       },
-      roleId,
+      roleId: body.roleId,
     })
     const device = await this.authRepo.createDevice({
       ip,
@@ -162,16 +168,6 @@ export class AuthService {
       refreshToken,
       user: newUser,
     }
-  }
-
-  async registerClient({ body, ip, userAgent }: { body: RegisterBodyType; ip: string; userAgent: string }) {
-    const clientRoleId = await this.sharedRoleRepo.getClientRoleId()
-    return this.register({
-      body,
-      roleId: clientRoleId,
-      ip,
-      userAgent,
-    })
   }
 
   async sendOTP(body: SendOTPBodyType): Promise<MessageResType> {
@@ -235,7 +231,7 @@ export class AuthService {
     }
   }
 
-  async login({ body, ip, userAgent }: { body: LoginBodyType; ip: string; userAgent: string }): Promise<LoginResTyoe> {
+  async login({ body, ip, userAgent }: { body: LoginBodyType; ip: string; userAgent: string }): Promise<LoginResType> {
     // Kiểm tra email có tồn tại trên hệ thống không
     const user = await this.sharedUserRepo.findUnique({
       email: body.email,

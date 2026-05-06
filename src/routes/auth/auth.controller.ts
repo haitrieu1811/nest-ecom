@@ -37,7 +37,7 @@ export class AuthController {
   @IsPublic()
   @ZodResponse({ type: RegisterResDTO })
   registerClient(@Body() body: RegisterBodyDTO, @Ip() ip: string, @UserAgent() userAgent: string) {
-    return this.authService.registerClient({
+    return this.authService.register({
       body,
       ip,
       userAgent,

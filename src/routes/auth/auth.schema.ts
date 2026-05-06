@@ -27,6 +27,7 @@ export const DeviceSchema = z
 export const RegisterBodySchema = UserSchema.pick({
   email: true,
   password: true,
+  roleId: true,
 })
   .extend({
     confirmPassword: confirmPasswordSchema,
@@ -178,7 +179,7 @@ export type RegisterResType = z.infer<typeof RegisterResSchema>
 export type VerificationCode = z.infer<typeof VerificationCodeSchema>
 export type SendOTPBodyType = z.infer<typeof SendOTPBodySchema>
 export type LoginBodyType = z.infer<typeof LoginBodySchema>
-export type LoginResTyoe = z.infer<typeof LoginResSchema>
+export type LoginResType = z.infer<typeof LoginResSchema>
 export type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>
 export type RefreshTokenResType = z.infer<typeof TokensResSchema>
 export type TokensResType = z.infer<typeof TokensResSchema>

@@ -20,7 +20,10 @@ export const UserSchema = z
     avatar: z.string('Error.AvatarMustBeAString').nullable(),
     totpSecret: z.string().nullable(),
     status: z.enum([UserStatus.ACTIVE, UserStatus.BLOCKED], 'Error.UserStatusIsInvalid'),
-    roleId: z.int('Error.RoleIdMustBeAInt').positive('Error.RoleIdMustBePositive'),
+    roleId: z.coerce
+      .number('Error.RoleIdMustBeANumber')
+      .int('Error.RoleIdMustBeAInt')
+      .positive('Error.RoleIdMustBePositive'),
     createdById: z.int().positive().nullable(),
     updatedById: z.int().positive().nullable(),
     deletedAt: z.iso.datetime().nullable(),

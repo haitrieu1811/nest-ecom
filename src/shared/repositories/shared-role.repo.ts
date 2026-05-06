@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { RoleWhereUniqueInput } from 'generated/prisma/models'
 
 import { ROLE_NAME } from 'src/shared/constants/role.constant'
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -9,6 +10,12 @@ export class SharedRoleRepo {
   adminRoleId: number | null = null
 
   constructor(private readonly prisma: PrismaService) {}
+
+  findUnique(where: RoleWhereUniqueInput) {
+    return this.prisma.role.findUnique({
+      where,
+    })
+  }
 
   // Get và cache client role id
   async getClientRoleId() {
