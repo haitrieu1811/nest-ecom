@@ -4,10 +4,11 @@ import { google } from 'googleapis'
 import { v4 as uuidv4 } from 'uuid'
 
 import { AuthRepo } from 'src/routes/auth/auth.repo'
-import { GetGoogleOAuthLinkResType, GoogleOAuthLinkStateType, TokensResType } from 'src/routes/auth/auth.schema'
+import { GetGoogleOAuthLinkResType, GoogleOAuthLinkStateType, LoginResType } from 'src/routes/auth/auth.schema'
 import { AuthService } from 'src/routes/auth/auth.service'
 import envConfig from 'src/shared/config'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
+import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
 import { HashingService } from 'src/shared/services/hashing.service'
 
 @Injectable()
@@ -19,6 +20,7 @@ export class GoogleService {
     private readonly sharedRoleRepo: SharedRoleRepo,
     private readonly hashingService: HashingService,
     private readonly authService: AuthService,
+    private readonly sharedUserRepo: SharedUserRepo,
   ) {
     this.oAuth2Client = new google.auth.OAuth2(
       envConfig.GOOGLE_CLIENT_ID,
@@ -44,7 +46,7 @@ export class GoogleService {
     }
   }
 
-  async googleCallback({ code, state }: { code: string; state: string }): Promise<TokensResType> {
+  async googleCallback({ code, state }: { code: string; state: string }): Promise<LoginResType> {
     try {
       let ip = 'Unknown'
       let userAgent = 'Unknown'
@@ -91,13 +93,16 @@ export class GoogleService {
         userAgent,
         userId: user.id,
       })
-      // Tạo tokens
+      // Tạo tokens và lấy thông tin user trả về cho client
       const authTokens = await this.authService.signTokens({
         userId: user.id,
         roleId: user.roleId,
         deviceId: device.id,
       })
-      return authTokens
+      return {
+        ...authTokens,
+        user,
+      }
     } catch (error) {
       console.log('Đăng nhập Google thất bại', error)
       throw error

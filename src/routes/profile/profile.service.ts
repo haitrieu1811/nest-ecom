@@ -46,7 +46,9 @@ export class ProfileService {
         },
         data: body,
       })
-      return updatedUser
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { role, ...user } = updatedUser
+      return user
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw ProfileNotFoundException

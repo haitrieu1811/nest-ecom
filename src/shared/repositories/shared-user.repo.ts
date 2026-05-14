@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
-import { UserIncludeRolePermissionsType, UserType } from 'src/shared/schemas/shared-user.schema'
+import { UserIncludeRolePermissionsType, UserIncludeRoleType, UserType } from 'src/shared/schemas/shared-user.schema'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 export type UserWhereUniqueObject = { email: string } | { id: number } | { phoneNumber: string }
@@ -55,6 +55,48 @@ export class SharedUserRepo {
           },
         },
       },
+      omit: {
+        password: true,
+        totpSecret: true,
+      },
+    }) as any
+  }
+
+  updateIncludeRole({
+    where,
+    data,
+    updatedById,
+  }: {
+    where: UserWhereUniqueObject
+    data: Partial<
+      Pick<UserType, 'email' | 'name' | 'phoneNumber' | 'avatar' | 'password' | 'roleId' | 'status' | 'totpSecret'>
+    >
+    updatedById?: number
+  }): Promise<UserIncludeRoleType> {
+    return this.prisma.user.update({
+      where: {
+        ...where,
+        deletedAt: null,
+      },
+      data: {
+        ...data,
+        updatedById,
+      },
+      include: {
+        role: true,
+      },
+      omit: {
+        password: true,
+        totpSecret: true,
+      },
+    }) as any
+  }
+
+  findUniqueOmitPasswordAndTotpSecret(
+    uniqueObject: UserWhereUniqueObject,
+  ): Promise<Omit<UserType, 'password' | 'totpSecret'> | null> {
+    return this.prisma.user.findUnique({
+      where: { ...uniqueObject, deletedAt: null },
       omit: {
         password: true,
         totpSecret: true,

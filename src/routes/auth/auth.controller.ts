@@ -63,6 +63,7 @@ export class AuthController {
   }
 
   @Post('refresh-token')
+  @IsPublic()
   @ZodResponse({ type: TokensResDTO })
   refreshToken(@Body() body: RefreshTokenBodyDTO, @Ip() ip: string, @UserAgent() userAgent: string) {
     return this.authService.refreshToken({
@@ -97,7 +98,7 @@ export class AuthController {
         state,
       })
       return res.redirect(
-        `${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?accessToken=${data.accessToken}&refreshToken=${data.refreshToken}`,
+        `${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?accessToken=${data.accessToken}&refreshToken=${data.refreshToken}&user=${JSON.stringify(data.user)}`,
       )
     } catch (error) {
       const message =

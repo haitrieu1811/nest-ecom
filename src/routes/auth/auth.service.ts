@@ -137,12 +137,10 @@ export class AuthService {
       type: VerificationCodeType.REGISTER,
     })
     // Tạo user mới, device mới trả về user và tokens
-    const newUser = await this.authRepo.createUser({
-      data: {
-        email: body.email,
-        password: body.password,
-        roleId: body.roleId,
-      },
+    const hashedPassword = await this.hashingService.hash(body.password)
+    const newUser = await this.authRepo.createUserIncludeRole({
+      email: body.email,
+      password: hashedPassword,
       roleId: body.roleId,
     })
     const device = await this.authRepo.createDevice({
@@ -166,7 +164,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: newUser,
+      user: omit(newUser, ['password', 'totpSecret']),
     }
   }
 
@@ -233,7 +231,7 @@ export class AuthService {
 
   async login({ body, ip, userAgent }: { body: LoginBodyType; ip: string; userAgent: string }): Promise<LoginResType> {
     // Kiểm tra email có tồn tại trên hệ thống không
-    const user = await this.sharedUserRepo.findUnique({
+    const user = await this.authRepo.findUniqueUserIncludeRole({
       email: body.email,
     })
     if (!user) {
@@ -368,7 +366,7 @@ export class AuthService {
     // Đặt lại mật khẩu và xóa OTP đã sử dụng
     const hashedPassword = await this.hashingService.hash(body.password)
     const [user] = await Promise.all([
-      this.sharedUserRepo.update({
+      this.sharedUserRepo.updateIncludeRole({
         where: {
           email: verificationCode.email,
         },

@@ -10,14 +10,17 @@ export const UpdateProfileBodySchema = UserSchema.pick({
   avatar: true,
 }).strict()
 
-export const UpdateProfileResSchema = UserIncludeRolePermissionsSchema
+export const UpdateProfileResSchema = UserSchema.omit({
+  password: true,
+  totpSecret: true,
+})
 
 export const ChangePasswordBodySchema = UserSchema.pick({
   password: true,
 })
   .extend({
-    oldPassword: z.string('Error.OldPasswordMustBeAString'),
-    confirmPassword: z.string('Error.ConfirmPasswordMustBeAString'),
+    oldPassword: z.string('Error.OldPasswordMustBeAString').min(1, 'Error.OldPasswordRequired'),
+    confirmPassword: z.string('Error.ConfirmPasswordMustBeAString').min(1, 'Error.ConfirmPasswordRequired'),
   })
   .superRefine(({ password, confirmPassword }, ctx) => {
     if (confirmPassword !== password) {

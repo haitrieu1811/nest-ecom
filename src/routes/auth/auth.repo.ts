@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { DeviceType, RegisterBodyType, VerificationCode } from 'src/routes/auth/auth.schema'
 import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
-import { UserType } from 'src/shared/schemas/shared-user.schema'
+import { UserIncludeRoleType, UserType } from 'src/shared/schemas/shared-user.schema'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
@@ -117,22 +117,27 @@ export class AuthRepo {
       | {
           phoneNumber: string
         },
-  ) {
+  ): Promise<UserIncludeRoleType | null> {
     return this.prisma.user.findUnique({
-      where: uniqueObject,
+      where: {
+        ...uniqueObject,
+        deletedAt: null,
+      },
       include: {
         role: true,
       },
-    })
+    }) as any
   }
 
-  createUserIncludeRole(data: Pick<UserType, 'email' | 'password' | 'avatar' | 'name' | 'roleId'>) {
+  createUserIncludeRole(
+    data: Pick<UserType, 'email' | 'password' | 'roleId'> & Partial<Pick<UserType, 'phoneNumber' | 'avatar' | 'name'>>,
+  ): Promise<UserIncludeRoleType> {
     return this.prisma.user.create({
       data,
       include: {
         role: true,
       },
-    })
+    }) as any
   }
 
   findUniqueVerificationCode(uniqueObject: VerificationCodeWhereUnique) {
