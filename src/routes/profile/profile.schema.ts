@@ -1,6 +1,10 @@
 import z from 'zod'
 
-import { UserIncludeRolePermissionsSchema, UserSchema } from 'src/shared/schemas/shared-user.schema'
+import {
+  UserIncludeRolePermissionsSchema,
+  UserIncludeRoleSchema,
+  UserSchema,
+} from 'src/shared/schemas/shared-user.schema'
 
 export const GetProfileResSchema = UserIncludeRolePermissionsSchema
 
@@ -10,7 +14,7 @@ export const UpdateProfileBodySchema = UserSchema.pick({
   avatar: true,
 }).strict()
 
-export const UpdateProfileResSchema = UserSchema.omit({
+export const UpdateProfileResSchema = UserIncludeRoleSchema.omit({
   password: true,
   totpSecret: true,
 })

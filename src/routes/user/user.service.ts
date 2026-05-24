@@ -6,6 +6,7 @@ import {
   CreateUserBodyType,
   CreateUserResType,
   GetUserResType,
+  GetUsersQueryType,
   GetUsersResType,
   UpdateUserBodyType,
 } from 'src/routes/user/user.schema'
@@ -25,7 +26,6 @@ import {
 } from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
 import { SharedUserRepo } from 'src/shared/repositories/shared-user.repo'
-import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
 import { HashingService } from 'src/shared/services/hashing.service'
 
@@ -202,7 +202,7 @@ export class UserService {
     }
   }
 
-  async getUsers(query: PaginationQueryType): Promise<GetUsersResType> {
+  async getUsers(query: GetUsersQueryType): Promise<GetUsersResType> {
     const { users, totalUsers } = await this.userRepo.findMany(query)
     return {
       data: users,

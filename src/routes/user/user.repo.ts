@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
+import { UserWhereInput } from 'generated/prisma/models'
 
-import { CreateUserBodyType } from 'src/routes/user/user.schema'
+import { CreateUserBodyType, GetUsersQueryType } from 'src/routes/user/user.schema'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { UserWhereUniqueObject } from 'src/shared/repositories/shared-user.repo'
-import { PaginationQueryType } from 'src/shared/schemas/request.shema'
-import { UserIncludeRolePermissionsType, UserType } from 'src/shared/schemas/shared-user.schema'
+import { UserIncludeRolePermissionsType, UserIncludeRoleType, UserType } from 'src/shared/schemas/shared-user.schema'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
@@ -53,35 +53,31 @@ export class UserRepo {
         })
   }
 
-  async findMany(query: PaginationQueryType): Promise<{
-    users: UserIncludeRolePermissionsType[]
+  async findMany(query: GetUsersQueryType): Promise<{
+    users: UserIncludeRoleType[]
     totalUsers: number
   }> {
+    const where: UserWhereInput = {}
+    if (query.email) {
+      where.email = {
+        contains: query.email,
+        mode: 'insensitive',
+      }
+    }
     const [users, totalUsers] = await Promise.all([
       this.prisma.user.findMany({
+        where,
         skip: (query.page - 1) * query.limit,
         take: query.limit,
         include: {
-          role: {
-            include: {
-              permissions: {
-                where: {
-                  deletedAt: null,
-                },
-                select: {
-                  path: true,
-                  method: true,
-                },
-              },
-            },
-          },
+          role: true,
         },
         omit: {
           password: true,
           totpSecret: true,
         },
       }),
-      this.prisma.user.count(),
+      this.prisma.user.count({ where }),
     ])
     return {
       users: users as any,

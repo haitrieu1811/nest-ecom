@@ -5,6 +5,7 @@ import {
   CreateUserBodyDTO,
   CreateUserResDTO,
   GetUserResDTO,
+  GetUsersQueryDTO,
   GetUsersResDTO,
   UpdateUserBodyDTO,
   UpdateUserResDTO,
@@ -14,7 +15,6 @@ import { UserService } from 'src/routes/user/user.service'
 import type { RoleNameType } from 'src/shared/constants/role.constant'
 import ActiveRole from 'src/shared/decorators/active-role.decorator'
 import ActiveUser from 'src/shared/decorators/active-user.decorator'
-import { PaginationQueryDTO } from 'src/shared/dtos/request.dto'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
 @Controller('users')
@@ -67,7 +67,7 @@ export class UserController {
 
   @Get()
   @ZodResponse({ type: GetUsersResDTO })
-  getUsers(@Query() query: PaginationQueryDTO) {
+  getUsers(@Query() query: GetUsersQueryDTO) {
     return this.userService.getUsers(query)
   }
 

@@ -40,15 +40,13 @@ export class ProfileService {
     body: UpdateProfileBodyType
   }): Promise<UpdateProfileResType> {
     try {
-      const updatedUser = await this.sharedUserRepo.update({
+      const updatedUser = await this.sharedUserRepo.updateIncludeRole({
         where: {
           id: userId,
         },
         data: body,
       })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { role, ...user } = updatedUser
-      return user
+      return updatedUser
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw ProfileNotFoundException
