@@ -5,11 +5,14 @@ import { CategoryTranslationSchema } from 'src/shared/schemas/shared-category-tr
 export const CategorySchema = z
   .object({
     id: z.int().positive(),
-    name: z.string('Error.CategoryNameMustBeAString').max(100, 'Error.CategoryNameMustBeAtMost100Characters'),
+    name: z
+      .string('Error.CategoryNameMustBeAString')
+      .min(1, 'Error.CategoryNameMustBeAtLeast1Character')
+      .max(100, 'Error.CategoryNameMustBeAtMost100Characters'),
     description: z
       .string('Error.CategoryDescriptionMustBeAString')
       .max(500, 'Error.CategoryDescriptionMustBeAtMost500Characters')
-      .default(''),
+      .optional(),
     logo: z.string('Error.CategoryLogoMustBeAStringOrNull').nullable(),
     parentId: z
       .int('Error.CategoryParentIdMustBeAnIntegerOrNull')

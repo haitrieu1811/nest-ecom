@@ -5,12 +5,11 @@ import { HTTP_METHOD } from 'src/shared/constants/permission.constant'
 export const PermissionSchema = z
   .object({
     id: z.number().positive(),
-    name: z.string('Error.PermissionNameIsRequired').max(50, 'Error.PermissionNameIsTooLong'),
+    name: z.string('Error.PermissionNameIsRequired').max(200, 'Error.PermissionNameIsTooLong'),
     description: z
       .string('Error.PermissionDescriptionIsRequired')
       .max(200, 'Error.PermissionDescriptionIsTooLong')
-      .optional()
-      .default(''),
+      .optional(),
     path: z.string('Error.PermissionPathIsRequired').max(100, 'Error.PermissionPathIsTooLong'),
     method: z.enum(
       [
@@ -24,6 +23,7 @@ export const PermissionSchema = z
       ],
       'Error.InvalidPermissionMethod',
     ),
+    module: z.string('Error.PermissionModuleIsRequired').max(50, 'Error.PermissionModuleIsTooLong'),
     deletedAt: z.iso.datetime().nullable(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),

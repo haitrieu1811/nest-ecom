@@ -1,24 +1,8 @@
 import z from 'zod'
 
-import { PaginationResSchema } from 'src/shared/schemas/response.schema'
-import { RoleIncludePermissions, RoleSchema } from 'src/shared/schemas/shared-role.schema'
+import { RoleIncludeCountSchema, RoleIncludePermissions, RoleSchema } from 'src/shared/schemas/shared-role.schema'
 
 export const CreateRoleBodySchema = RoleSchema.pick({
-  name: true,
-  description: true,
-  isActive: true,
-}).strict()
-
-export const CreateRoleResSchema = RoleSchema
-
-export const GetRolesResSchema = z.object({
-  data: z.array(RoleSchema),
-  pagination: PaginationResSchema,
-})
-
-export const GetRoleResSchema = RoleIncludePermissions
-
-export const UpdateRoleBodySchema = RoleSchema.pick({
   name: true,
   description: true,
   isActive: true,
@@ -32,6 +16,17 @@ export const UpdateRoleBodySchema = RoleSchema.pick({
     ),
   })
   .strict()
+
+export const CreateRoleResSchema = RoleSchema
+
+export const GetRolesResSchema = z.object({
+  data: z.array(RoleIncludeCountSchema),
+  totalRows: z.number(),
+})
+
+export const GetRoleResSchema = RoleIncludePermissions
+
+export const UpdateRoleBodySchema = CreateRoleBodySchema
 
 export const UpdateRoleResSchema = RoleIncludePermissions
 

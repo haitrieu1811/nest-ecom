@@ -1,18 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 import { ZodResponse } from 'nestjs-zod'
 
 import {
   CreatePermissionBodyDTO,
   CreatePermissionResDTO,
-  PermissionIdParamDTO,
   GetPermissionResDTO,
   GetPermissionsResDTO,
-  UpdatePermissionResDTO,
+  PermissionIdParamDTO,
   UpdatePermissionBodyDTO,
+  UpdatePermissionResDTO,
 } from 'src/routes/permission/permission.dto'
 import { PermissionService } from 'src/routes/permission/permission.service'
 import ActiveUser from 'src/shared/decorators/active-user.decorator'
-import { PaginationQueryDTO } from 'src/shared/dtos/request.dto'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
 @Controller('permissions')
@@ -27,8 +26,8 @@ export class PermissionController {
 
   @Get()
   @ZodResponse({ type: GetPermissionsResDTO })
-  getPermissions(@Query() query: PaginationQueryDTO) {
-    return this.permissionService.getPermissions(query)
+  getPermissions() {
+    return this.permissionService.getPermissions()
   }
 
   @Get(':permissionId')

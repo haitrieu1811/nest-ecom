@@ -15,6 +15,7 @@ import {
   TOTPCodeOrCodeIsRequiredException,
   TwoFactorAuthAlreadyEnabledException,
   TwoFactorAuthNotEnabledException,
+  UserBlockedException,
 } from 'src/routes/auth/auth.error'
 import { AuthRepo } from 'src/routes/auth/auth.repo'
 import {
@@ -32,7 +33,7 @@ import {
   SendOTPBodyType,
 } from 'src/routes/auth/auth.schema'
 import envConfig from 'src/shared/config'
-import { TypeOfVerificationCode, VerificationCodeType } from 'src/shared/constants/auth.constant'
+import { TypeOfVerificationCode, UserStatus, VerificationCodeType } from 'src/shared/constants/auth.constant'
 import { EmailAlreadyExistException, RoleNotFoundException } from 'src/shared/error'
 import { generateOTP } from 'src/shared/helpers'
 import { SharedRoleRepo } from 'src/shared/repositories/shared-role.repo'
@@ -241,6 +242,10 @@ export class AuthService {
     const isCorrectPassword = await this.hashingService.compare(body.password, user.password)
     if (!isCorrectPassword) {
       throw IncorrectPasswordException
+    }
+    // Kiểm tra user có bị block không
+    if (user.status === UserStatus.BLOCKED) {
+      throw UserBlockedException
     }
     // Nếu user đã bật 2FA thì kiểm tra code hoặc TOTP code
     if (user.totpSecret) {

@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
+import { CreateRoleBodyType, UpdateRoleBodyType } from 'src/routes/role/role.schema'
 
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
-import { PaginationQueryType } from 'src/shared/schemas/request.shema'
-import { RoleIncludePermissionsType, RoleType } from 'src/shared/schemas/shared-role.schema'
+import { RoleIncludeCountType, RoleIncludePermissionsType, RoleType } from 'src/shared/schemas/shared-role.schema'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 type RoleWhereUniqueObject =
@@ -18,17 +18,16 @@ type RoleWhereUniqueObject =
 export class RoleRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  create({
-    data,
-    userId,
-  }: {
-    data: Pick<RoleType, 'name' | 'description' | 'isActive'>
-    userId: number
-  }): Promise<RoleType> {
+  create({ data, userId }: { data: CreateRoleBodyType; userId: number }): Promise<RoleType> {
     return this.prisma.role.create({
       data: {
-        ...data,
+        name: data.name,
+        description: data.description,
+        isActive: data.isActive,
         createdById: userId,
+        permissions: {
+          connect: data.permissionIds.map((id) => ({ id })),
+        },
       },
     }) as any
   }
@@ -38,7 +37,7 @@ export class RoleRepo {
     userId,
     where,
   }: {
-    data: Partial<Pick<RoleType, 'name' | 'description' | 'isActive'>> & { permissionIds: number[] }
+    data: UpdateRoleBodyType
     userId: number
     where: RoleWhereUniqueObject
   }): Promise<RoleIncludePermissionsType> {
@@ -73,16 +72,20 @@ export class RoleRepo {
             deletedAt: null,
           },
           select: {
+            id: true,
+            name: true,
+            description: true,
             path: true,
             method: true,
+            module: true,
           },
         },
       },
     }) as any
   }
 
-  async findMany({ page, limit }: PaginationQueryType): Promise<{
-    roles: RoleType[]
+  async findMany(): Promise<{
+    roles: RoleIncludeCountType[]
     totalRoles: number
   }> {
     const [roles, totalRoles] = await Promise.all([
@@ -90,8 +93,13 @@ export class RoleRepo {
         where: {
           deletedAt: null,
         },
-        skip: (page - 1) * limit,
-        take: limit,
+        include: {
+          _count: {
+            select: {
+              users: true,
+            },
+          },
+        },
       }),
       this.prisma.role.count({
         where: {
@@ -117,8 +125,12 @@ export class RoleRepo {
             deletedAt: null,
           },
           select: {
+            id: true,
+            module: true,
             path: true,
             method: true,
+            name: true,
+            description: true,
           },
         },
       },

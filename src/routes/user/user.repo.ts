@@ -96,8 +96,12 @@ export class UserRepo {
                 deletedAt: null,
               },
               select: {
+                id: true,
                 path: true,
                 method: true,
+                name: true,
+                description: true,
+                module: true,
               },
             },
           },

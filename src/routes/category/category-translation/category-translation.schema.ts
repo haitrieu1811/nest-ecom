@@ -14,10 +14,7 @@ export const CreateCategoryTranslationBodySchema = CategoryTranslationSchema.pic
 
 export const CreateCategoryTranslationResSchema = CategoryTranslationSchema
 
-export const UpdateCategoryTranslationBodySchema = CategoryTranslationSchema.pick({
-  name: true,
-  description: true,
-}).strict()
+export const UpdateCategoryTranslationBodySchema = CreateCategoryTranslationBodySchema
 
 export const UpdateCategoryTranslationResSchema = CategoryTranslationSchema
 

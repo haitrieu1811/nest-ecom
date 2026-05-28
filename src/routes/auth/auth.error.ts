@@ -1,4 +1,9 @@
-import { BadRequestException, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ForbiddenException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common'
 
 export const EmailNotFoundException = new UnprocessableEntityException([
   {
@@ -58,3 +63,5 @@ export const InvalidTOTPCodeException = new UnprocessableEntityException([
     message: 'Error.InvalidTOTPCode',
   },
 ])
+
+export const UserBlockedException = new ForbiddenException('Error.UserBlocked')

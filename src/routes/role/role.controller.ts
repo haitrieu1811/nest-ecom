@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 import { ZodResponse } from 'nestjs-zod'
 
 import {
@@ -12,7 +12,6 @@ import {
 } from 'src/routes/role/role.dto'
 import { RoleService } from 'src/routes/role/role.service'
 import ActiveUser from 'src/shared/decorators/active-user.decorator'
-import { PaginationQueryDTO } from 'src/shared/dtos/request.dto'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
 @Controller('roles')
@@ -33,8 +32,8 @@ export class RoleController {
 
   @Get()
   @ZodResponse({ type: GetRolesResDTO })
-  getRoles(@Query() query: PaginationQueryDTO) {
-    return this.roleService.getRoles(query)
+  getRoles() {
+    return this.roleService.getRoles()
   }
 
   @Get(':roleId')

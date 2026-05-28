@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common'
 
-import { CreatePermissionBodyType, CreatePermissionResType } from 'src/routes/permission/permission.schema'
+import {
+  CreatePermissionBodyType,
+  CreatePermissionResType,
+  UpdatePermissionBodyType,
+} from 'src/routes/permission/permission.schema'
 import { HttpMethodType } from 'src/shared/constants/permission.constant'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
-import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { PermissionType } from 'src/shared/schemas/shared-permission.schema'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
@@ -33,13 +36,11 @@ export class PermissionRepo {
     }) as any
   }
 
-  findMany({ page, limit }: PaginationQueryType): Promise<PermissionType[]> {
+  findMany(): Promise<PermissionType[]> {
     return this.prisma.permission.findMany({
       where: {
         deletedAt: null,
       },
-      skip: (page - 1) * limit,
-      take: limit,
     }) as any
   }
 
@@ -66,7 +67,7 @@ export class PermissionRepo {
     userId,
   }: {
     where: PermissionWhereUniqueObjectType
-    data: Partial<Pick<PermissionType, 'name' | 'description' | 'path' | 'method'>>
+    data: UpdatePermissionBodyType
     userId: number
   }): Promise<PermissionType> {
     return this.prisma.permission.update({

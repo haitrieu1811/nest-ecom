@@ -11,7 +11,6 @@ import {
 } from 'src/routes/permission/permission.schema'
 import { PermissionNotFoundException } from 'src/shared/error'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
-import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
 
 @Injectable()
@@ -30,18 +29,11 @@ export class PermissionService {
     }
   }
 
-  async getPermissions(query: PaginationQueryType): Promise<GetPermissionsResType> {
-    const [permissions, totalRows] = await Promise.all([
-      this.permissionRepo.findMany(query),
-      this.permissionRepo.count(),
-    ])
+  async getPermissions(): Promise<GetPermissionsResType> {
+    const [permissions, count] = await Promise.all([this.permissionRepo.findMany(), this.permissionRepo.count()])
     return {
       data: permissions,
-      pagination: {
-        ...query,
-        totalRows,
-        totalPages: Math.ceil(totalRows / query.limit),
-      },
+      totalRows: count,
     }
   }
 

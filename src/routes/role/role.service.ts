@@ -13,7 +13,6 @@ import {
 import { ROLE_NAME } from 'src/shared/constants/role.constant'
 import { PermissionNotFoundException, RoleNotFoundException } from 'src/shared/error'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
-import { PaginationQueryType } from 'src/shared/schemas/request.shema'
 import { MessageResType } from 'src/shared/schemas/response.schema'
 import { RoleIncludePermissionsType } from 'src/shared/schemas/shared-role.schema'
 
@@ -49,6 +48,9 @@ export class RoleService {
       if (isUniqueConstraintPrismaError(error)) {
         throw RoleAlreadyExistException
       }
+      if (isNotFoundPrismaError(error)) {
+        throw PermissionNotFoundException
+      }
       throw error
     }
   }
@@ -74,25 +76,21 @@ export class RoleService {
       })
       return updatedRole
     } catch (error) {
-      if (isUniqueConstraintPrismaError(error)) {
-        throw RoleAlreadyExistException
-      }
       if (isNotFoundPrismaError(error)) {
         throw PermissionNotFoundException
+      }
+      if (isUniqueConstraintPrismaError(error)) {
+        throw RoleAlreadyExistException
       }
       throw error
     }
   }
 
-  async getRoles(query: PaginationQueryType): Promise<GetRolesResType> {
-    const { roles, totalRoles } = await this.roleRepo.findMany(query)
+  async getRoles(): Promise<GetRolesResType> {
+    const { roles, totalRoles } = await this.roleRepo.findMany()
     return {
       data: roles,
-      pagination: {
-        ...query,
-        totalRows: totalRoles,
-        totalPages: Math.ceil(totalRoles / query.limit),
-      },
+      totalRows: totalRoles,
     }
   }
 
