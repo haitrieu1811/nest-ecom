@@ -1,8 +1,10 @@
 import z from 'zod'
 
 export const VariantSchema = z.object({
-  value: z.string('Error.ProductVariantValueMustBeAString').trim(),
-  options: z.array(z.string('Error.ProductVariantOptionMustBeAString').trim()),
+  value: z.string('Error.ProductVariantValueMustBeAString').min(1, 'Error.ProductVariantValueIsRequired').trim(),
+  options: z.array(
+    z.string('Error.ProductVariantOptionMustBeAString').min(1, 'Error.ProductVariantOptionIsRequired').trim(),
+  ),
 })
 
 export const VariantsSchema = z

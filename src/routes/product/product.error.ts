@@ -1,8 +1,3 @@
-import { UnprocessableEntityException } from '@nestjs/common'
+import { NotFoundException } from '@nestjs/common'
 
-export const SomeProductCategoriesNotFoundException = new UnprocessableEntityException([
-  {
-    path: 'categories',
-    message: 'Error.SomeProductCategoriesNotFound',
-  },
-])
+export const ProductCategoryNotFoundException = new NotFoundException('Error.ProductCategoryNotFound')

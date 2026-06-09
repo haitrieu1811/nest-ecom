@@ -14,10 +14,7 @@ export const CreateBrandTranslationBodySchema = BrandTranslationSchema.pick({
 
 export const CreateBrandTranslationResSchema = BrandTranslationSchema
 
-export const UpdateBrandTranslationBodySchema = BrandTranslationSchema.pick({
-  name: true,
-  description: true,
-}).strict()
+export const UpdateBrandTranslationBodySchema = CreateBrandTranslationBodySchema
 
 export const UpdateBrandTranslationResSchema = BrandTranslationSchema
 

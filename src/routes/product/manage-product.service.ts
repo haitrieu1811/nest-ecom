@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { I18nContext } from 'nestjs-i18n'
 
-import { SomeProductCategoriesNotFoundException } from 'src/routes/product/product.error'
+import { ProductCategoryNotFoundException } from 'src/routes/product/product.error'
 import { ProductRepo } from 'src/routes/product/product.repo'
 import {
   CreateProductBodyType,
@@ -115,7 +115,7 @@ export class ManageProductService {
     body: CreateProductBodyType
     createdById: number
   }): Promise<CreateProductResType> {
-    await this.validateBrandAndCategories(body.brandId, body.categories)
+    await this.validateBrandAndCategory(body.brandId, body.categoryId)
     // Tạo product mới
     const product = (await this.productRepo.create({
       data: body,
@@ -147,7 +147,7 @@ export class ManageProductService {
       userIdAgent: updatedById,
       createdById: product.createdById,
     })
-    await this.validateBrandAndCategories(body.brandId, body.categories)
+    await this.validateBrandAndCategory(body.brandId, body.categoryId)
     const updatedProduct = await this.productRepo.update({
       data: body,
       productId,
@@ -157,9 +157,9 @@ export class ManageProductService {
   }
 
   /**
-   * Hàm validateBrandAndCategories dùng để kiểm tra xem brandId có tồn tại trong bảng brand hay không và các categoryIds có tồn tại trong bảng category hay không. Nếu brandId không tồn tại thì sẽ ném ra lỗi BrandNotFoundException, nếu có bất kỳ categoryId nào không tồn tại thì sẽ ném ra lỗi SomeProductCategoriesNotFoundException. Hàm này sẽ được gọi trong cả createProduct và updateProduct để đảm bảo dữ liệu hợp lệ trước khi thực hiện các thao tác tạo mới hoặc cập nhật sản phẩm.
+   * Hàm này kiểm tra sự tồn tại của brandId và categoryId (nếu có) trong database, nếu không tìm thấy sẽ ném lỗi BrandNotFoundException hoặc ProductCategoryNotFoundException tương ứng
    */
-  private validateBrandAndCategories = async (brandId: number | null, categoryIds: number[]): Promise<boolean> => {
+  private validateBrandAndCategory = async (brandId: number | null, categoryId: number | null): Promise<boolean> => {
     // Kiểm tra brand có tồn tại không
     if (brandId) {
       const brand = await this.sharedBrandRepo.findUnique({
@@ -170,11 +170,14 @@ export class ManageProductService {
         throw BrandNotFoundException
       }
     }
-    // Kiểm tra các id trong mảng categories có tồn tại tất cả không, nếu có bất kỳ id nào không tồn tại thì trả về lỗi
-    if (categoryIds.length > 0) {
-      const categories = await this.sharedCategoryRepo.findMany(categoryIds)
-      if (categories.length !== categoryIds.length) {
-        throw SomeProductCategoriesNotFoundException
+    // Kiểm tra category có tồn tại không
+    if (categoryId) {
+      const category = await this.sharedCategoryRepo.findUnique({
+        id: categoryId,
+        deletedAt: null,
+      })
+      if (!category) {
+        throw ProductCategoryNotFoundException
       }
     }
     return true

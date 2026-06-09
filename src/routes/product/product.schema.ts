@@ -12,8 +12,11 @@ import { SKUSchema, VariantsSchema } from 'src/shared/schemas/shared-product.sch
 export const ProductSchema = z
   .object({
     id: z.int().positive(),
-    name: z.string('Error.ProductNameMustBeAString').max(500, 'Error.ProductNameIsTooLong'),
-    description: z.string('Error.ProductDescriptionMustBeAString'),
+    name: z
+      .string('Error.ProductNameMustBeAString')
+      .min(1, 'Error.ProductNameIsRequired')
+      .max(500, 'Error.ProductNameIsTooLong'),
+    description: z.string('Error.ProductDescriptionMustBeAString').min(1, 'Error.ProductDescriptionIsRequired'),
     basePrice: z
       .number('Error.ProductBasePriceMustBeANumber')
       .int('Error.ProductBasePriceMustBeAnInteger')
@@ -26,10 +29,16 @@ export const ProductSchema = z
     images: z.array(z.string('Error.ProductImageMustBeAString')),
     variants: VariantsSchema,
     deletedAt: z.iso.datetime().nullable(),
-    publishedAt: z.iso.datetime('Error.ProductPublishedAtMustBeAValidDate').nullable(),
+    publishedAt: z.iso
+      .datetime({
+        offset: true,
+        error: 'Error.ProductPublishedAtMustBeAValidDate',
+      })
+      .nullable(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
     brandId: z.int('Error.BrandIdMustBeANumber').positive('Error.BrandIdMustBePositive').nullable(),
+    categoryId: z.int('Error.CategoryIdMustBeANumber').positive('Error.CategoryIdMustBePositive').nullable(),
     createdById: z.int().positive().nullable(),
     updatedById: z.int().positive().nullable(),
   })
@@ -40,7 +49,7 @@ export const ProductIncludeTranslationsSchema = ProductSchema.extend({
 })
 
 export const ProductDetailSchema = ProductIncludeTranslationsSchema.extend({
-  categories: z.array(CategoryIncludeTranslationsSchema),
+  category: CategoryIncludeTranslationsSchema.nullable(),
   brand: BrandIncludeTranslationsSchema.nullable(),
   skus: z.array(SKUSchema),
 })
@@ -55,10 +64,10 @@ export const CreateProductBodySchema = ProductSchema.pick({
   variants: true,
   publishedAt: true,
   brandId: true,
+  categoryId: true,
 })
   .extend({
-    categories: z.array(z.number().int().positive(), 'Error.ProductCategoriesMustBeAnArrayOfCategoryIds').default([]),
-    skus: z.array(UpsertSKUBodySchema, 'Error.ProductSKUsMustBeAnArrayOfSKUs').default([]),
+    skus: z.array(UpsertSKUBodySchema, 'Error.ProductSKUsMustBeAnArrayOfSKUs'),
   })
   .strict()
 
@@ -84,22 +93,10 @@ export const GetProductsQuerySchema = PaginationQuerySchema.extend({
     .int('Error.BrandIdMustBeAnInteger')
     .positive('Error.BrandIdMustBePositive')
     .optional(),
-  categories: z
-    .preprocess(
-      (value) => {
-        if (typeof value === 'string') {
-          return [value]
-        }
-        return value
-      },
-      z.array(
-        z.coerce
-          .number('Error.CategoryIdMustBeANumber')
-          .int('Error.CategoryIdMustBeAnInteger')
-          .positive('Error.CategoryIdMustBePositive'),
-        'Error.CategoriesMustBeAnArrayOfCategoryIds',
-      ),
-    )
+  categoryId: z.coerce
+    .number('Error.CategoryIdMustBeANumber')
+    .int('Error.CategoryIdMustBeAnInteger')
+    .positive('Error.CategoryIdMustBePositive')
     .optional(),
   name: z.string('Error.NameMustBeAString').trim().optional(),
   minPrice: z.coerce
@@ -119,8 +116,8 @@ export const GetProductsQuerySchema = PaginationQuerySchema.extend({
     .optional(),
   sortBy: z
     .enum([SORT_BY.NAME, SORT_BY.BASE_PRICE, SORT_BY.CREATED_AT], 'Error.SortByMustBeNameOrBasePriceOrCreatedAt')
-    .default(SORT_BY.CREATED_AT),
-  orderBy: z.enum([ORDER_BY.ASC, ORDER_BY.DESC], 'Error.OrderByMustBeAscOrDesc').default(ORDER_BY.DESC),
+    .optional(),
+  orderBy: z.enum([ORDER_BY.ASC, ORDER_BY.DESC], 'Error.OrderByMustBeAscOrDesc').optional(),
 })
 
 // Query params dành cho admin, manage, seller

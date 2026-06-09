@@ -7,7 +7,7 @@ export const BrandTranslationSchema = z
     description: z
       .string('Error.BrandTranslationDescriptionMustBeAString')
       .max(500, 'Error.BrandTranslationDescriptionIsTooLong')
-      .default(''),
+      .optional(),
     deletedAt: z.iso.datetime().nullable(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),

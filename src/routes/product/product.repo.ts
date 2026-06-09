@@ -9,7 +9,7 @@ import {
   ProductType,
   UpdateProductBodyType,
 } from 'src/routes/product/product.schema'
-import { ALL_LANGUAGES_CODE } from 'src/shared/constants/utils.constant'
+import { ALL_LANGUAGES_CODE, ORDER_BY, SORT_BY } from 'src/shared/constants/utils.constant'
 import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
@@ -56,13 +56,8 @@ export class ProductRepo {
       where.brandId = query.brandId
     }
     // Lọc theo danh mục sản phẩm
-    if (query.categories && query.categories.length > 0) {
-      where.categories = {
-        some: {
-          id: { in: query.categories },
-          deletedAt: null,
-        },
-      }
+    if (query.categoryId) {
+      where.categoryId = query.categoryId
     }
     // Lọc theo khoảng giá
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {
@@ -85,7 +80,7 @@ export class ProductRepo {
         skip,
         take,
         orderBy: {
-          [query.sortBy]: query.orderBy,
+          [query.sortBy ?? SORT_BY.CREATED_AT]: query.orderBy ?? ORDER_BY.DESC,
         },
       }) as any,
     ])
@@ -114,7 +109,7 @@ export class ProductRepo {
         productTranslations: {
           where: languageId === ALL_LANGUAGES_CODE ? { deletedAt: null } : { languageId, deletedAt: null },
         },
-        categories: {
+        category: {
           where: { deletedAt: null },
           include: {
             categoryTranslations: {
@@ -182,15 +177,11 @@ export class ProductRepo {
     data: CreateProductBodyType
     createdById: number
   }): Promise<ProductDetailType | null> {
-    const { skus, categories, ...productData } = data
+    const { skus, ...productData } = data
     const { id } = await this.prisma.product.create({
       data: {
         ...productData,
         createdById,
-
-        categories: {
-          connect: categories.map((categoryId) => ({ id: categoryId })),
-        },
         skus: {
           createMany: {
             data: skus,
@@ -204,7 +195,7 @@ export class ProductRepo {
         productTranslations: {
           where: { deletedAt: null },
         },
-        categories: {
+        category: {
           where: { deletedAt: null },
           include: {
             categoryTranslations: {
@@ -243,7 +234,7 @@ export class ProductRepo {
      * 2. SKU có trong data gửi lên và có trong database => Cập nhật SKU đó
      * 3. SKU có trong data gửi lên mà không có trong database => Tạo mới SKU đó
      */
-    const { categories, skus: skusData, ...productData } = data
+    const { skus: skusData, ...productData } = data
     // Lấy danh sách SKU hiện tại của product trong database
     const currentSKUs = await this.prisma.sKU.findMany({
       where: {
@@ -277,9 +268,6 @@ export class ProductRepo {
         data: {
           ...productData,
           updatedById,
-          categories: {
-            set: categories.map((categoryId) => ({ id: categoryId })),
-          },
         },
       }) as any,
       // Xóa mềm SKU (trường hợp 1)
