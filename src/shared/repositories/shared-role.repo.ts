@@ -8,6 +8,7 @@ import { PrismaService } from 'src/shared/services/prisma.service'
 export class SharedRoleRepo {
   clientRoleId: number | null = null
   adminRoleId: number | null = null
+  sellerRoleId: number | null = null
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -51,5 +52,23 @@ export class SharedRoleRepo {
     }
     this.adminRoleId = adminRole.id
     return adminRole.id
+  }
+
+  // Get và cache seller role id
+  async getSellerRoleId() {
+    if (this.sellerRoleId) {
+      return this.sellerRoleId
+    }
+    const sellerRole = await this.prisma.role.findUnique({
+      where: {
+        name: ROLE_NAME.SELLER,
+        deletedAt: null,
+      },
+    })
+    if (!sellerRole) {
+      throw new Error('Error.CannotFoundSellerRole')
+    }
+    this.sellerRoleId = sellerRole.id
+    return sellerRole.id
   }
 }

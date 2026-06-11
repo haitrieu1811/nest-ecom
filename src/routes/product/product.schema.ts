@@ -8,6 +8,7 @@ import { PaginationResSchema } from 'src/shared/schemas/response.schema'
 import { BrandIncludeTranslationsSchema } from 'src/shared/schemas/shared-brand.schema'
 import { CategoryIncludeTranslationsSchema } from 'src/shared/schemas/shared-category.schema'
 import { SKUSchema, VariantsSchema } from 'src/shared/schemas/shared-product.schema'
+import { UserSchema } from 'src/shared/schemas/shared-user.schema'
 
 export const ProductSchema = z
   .object({
@@ -52,6 +53,10 @@ export const ProductDetailSchema = ProductIncludeTranslationsSchema.extend({
   category: CategoryIncludeTranslationsSchema.nullable(),
   brand: BrandIncludeTranslationsSchema.nullable(),
   skus: z.array(SKUSchema),
+  createdBy: UserSchema.omit({
+    password: true,
+    totpSecret: true,
+  }),
 })
 
 export const CreateProductBodySchema = ProductSchema.pick({

@@ -3,9 +3,11 @@ import { createZodDto } from 'nestjs-zod'
 import {
   CreateUserBodySchema,
   CreateUserResSchema,
-  GetUserResSchema,
-  GetUsersQuerySchema,
-  GetUsersResSchema,
+  GetListSellersResSchema,
+  GetListUsersQuerySchema,
+  GetListUsersResSchema,
+  GetSellerDetailResSchema,
+  GetUserDetailResSchema,
   UpdateUserBodySchema,
   UpdateUserResSchema,
   UserIdParamSchema,
@@ -15,7 +17,9 @@ export class CreateUserBodyDTO extends createZodDto(CreateUserBodySchema) {}
 export class CreateUserResDTO extends createZodDto(CreateUserResSchema) {}
 export class UpdateUserBodyDTO extends createZodDto(UpdateUserBodySchema) {}
 export class UpdateUserResDTO extends createZodDto(UpdateUserResSchema) {}
-export class GetUsersQueryDTO extends createZodDto(GetUsersQuerySchema) {}
-export class GetUsersResDTO extends createZodDto(GetUsersResSchema) {}
-export class GetUserResDTO extends createZodDto(GetUserResSchema) {}
 export class UserIdParamDTO extends createZodDto(UserIdParamSchema) {}
+export class GetListUsersQueryDTO extends createZodDto(GetListUsersQuerySchema) {}
+export class GetListUsersResDTO extends createZodDto(GetListUsersResSchema) {}
+export class GetUserDetailResDTO extends createZodDto(GetUserDetailResSchema) {}
+export class GetListSellersResDTO extends createZodDto(GetListSellersResSchema) {}
+export class GetSellerDetailResDTO extends createZodDto(GetSellerDetailResSchema) {}

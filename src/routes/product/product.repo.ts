@@ -128,6 +128,12 @@ export class ProductRepo {
         skus: {
           where: { deletedAt: null },
         },
+        createdBy: {
+          omit: {
+            password: true,
+            totpSecret: true,
+          },
+        },
       },
     }) as any
   }
