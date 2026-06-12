@@ -410,6 +410,35 @@ model Message {
   toUser     User? @relation("MessageToUser", fields: [toUserId], references: [id], onDelete: SetNull, onUpdate: NoAction)
 }
 
+model Province {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(100)
+  code         Int      @unique
+  codeName     String   @db.VarChar(100)
+  divisionType String   @db.VarChar(50)
+  phoneCode    Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  wards Ward[] @relation("WardProvince")
+}
+
+model Ward {
+  id            Int      @id @default(autoincrement())
+  name          String   @db.VarChar(100)
+  code          Int      @unique
+  codeName      String   @db.VarChar(100)
+  divisionType  String   @db.VarChar(50)
+  shortCodeName String   @db.VarChar(100)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  provinceCode Int
+  province     Province @relation("WardProvince", fields: [provinceCode], references: [code], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([provinceCode])
+}
+
 enum UserStatus {
   ACTIVE
   BLOCKED

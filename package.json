@@ -9,6 +9,7 @@
     "seed-data": "bun run scripts/seed-data",
     "create-permissions": "bun run scripts/create-permissions",
     "generate-skus": "bun run scripts/generate-skus",
+    "init-provinces": "bun run scripts/init-provinces",
     "email:dev": "email dev",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
