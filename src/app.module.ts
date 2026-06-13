@@ -12,6 +12,7 @@ import { BrandModule } from 'src/routes/brand/brand.module'
 import { CategoryTranslationModule } from 'src/routes/category/category-translation/category-translation.module'
 import { CategoryModule } from 'src/routes/category/category.module'
 import { LanguageModule } from 'src/routes/language/language.module'
+import { LocationModule } from 'src/routes/location/location.module'
 import { MediaModule } from 'src/routes/media/media.module'
 import { PermissionModule } from 'src/routes/permission/permission.module'
 import { ProductTranslationModule } from 'src/routes/product/product-translation/product-translation.module'
@@ -43,6 +44,7 @@ import { SharedModule } from 'src/shared/shared.module'
     ProfileModule,
     UserModule,
     MediaModule,
+    LocationModule,
     BrandModule,
     BrandTranslationModule,
     CategoryModule,

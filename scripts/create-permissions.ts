@@ -10,8 +10,15 @@ const prisma = new PrismaService()
 // Các module seller được quyền truy cập: auth, profile, media, brands, brand-translations
 // Các module client được quyền truy cập: auth, profile, media
 // Role admin và seller thì được truy cập tất cả các module
-const SELLER_ALLOWED_MODULES = ['auth', 'profile', 'media', 'manage-products', 'product-translations'] as const
-const CLIENT_ALLOWED_MODULES = ['auth', 'profile', 'media', 'products'] as const
+const SELLER_ALLOWED_MODULES = [
+  'auth',
+  'profile',
+  'media',
+  'manage-products',
+  'product-translations',
+  'locations',
+] as const
+const CLIENT_ALLOWED_MODULES = ['auth', 'profile', 'media', 'products', 'locations'] as const
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
