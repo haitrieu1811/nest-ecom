@@ -7,8 +7,8 @@ export const ProvinceSchema = z.object({
   codeName: z.string().max(100),
   divisionType: z.string().max(50),
   phoneCode: z.number().int(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 })
 
 export const WardSchema = z.object({
@@ -19,8 +19,8 @@ export const WardSchema = z.object({
   divisionType: z.string().max(50),
   shortCodeName: z.string().max(100),
   provinceCode: z.number().int(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 })
 
 export const ProvinceCodeParamSchema = z

@@ -112,6 +112,7 @@ model User {
   devices                     Device[]              @relation("DeviceUser")
   createdBrandTranslations    BrandTranslation[]    @relation("BrandTranslationCreatedBy")
   updatedBrandTranslations    BrandTranslation[]    @relation("BrandTranslationUpdatedBy")
+  addresses                   Address[]             @relation("UserAddress")
 
   @@index([deletedAt])
 }
@@ -420,7 +421,8 @@ model Province {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  wards Ward[] @relation("WardProvince")
+  wards     Ward[]    @relation("WardProvince")
+  addresses Address[] @relation("AddressProvince")
 }
 
 model Ward {
@@ -436,7 +438,30 @@ model Ward {
   provinceCode Int
   province     Province @relation("WardProvince", fields: [provinceCode], references: [code], onDelete: Cascade, onUpdate: Cascade)
 
+  addresses Address[] @relation("AddressWard")
+
   @@index([provinceCode])
+}
+
+model Address {
+  id           Int       @id @default(autoincrement())
+  contactName  String    @db.VarChar(100)
+  phoneNumber  String    @db.VarChar(15)
+  streetDetail String    @db.VarChar(200)
+  isDefault    Boolean   @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  userId       Int
+  user         User     @relation("UserAddress", fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  provinceCode Int
+  province     Province @relation("AddressProvince", fields: [provinceCode], references: [code], onDelete: Cascade, onUpdate: Cascade)
+  wardCode     Int
+  ward         Ward     @relation("AddressWard", fields: [wardCode], references: [code], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([deletedAt])
+  @@index([userId])
 }
 
 enum UserStatus {

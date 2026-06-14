@@ -17,8 +17,9 @@ const SELLER_ALLOWED_MODULES = [
   'manage-products',
   'product-translations',
   'locations',
+  'addresses',
 ] as const
-const CLIENT_ALLOWED_MODULES = ['auth', 'profile', 'media', 'products', 'locations'] as const
+const CLIENT_ALLOWED_MODULES = ['auth', 'profile', 'media', 'products', 'locations', 'addresses'] as const
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)

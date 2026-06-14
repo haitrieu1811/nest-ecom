@@ -50,6 +50,10 @@ export class SharedUserRepo {
               select: {
                 path: true,
                 method: true,
+                id: true,
+                module: true,
+                name: true,
+                description: true,
               },
             },
           },
